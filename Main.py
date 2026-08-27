@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QLabel
 import qtawesome as qta
 
 from standard import StandardCalculator
+from scientific import ScientificCalculator
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -124,21 +125,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def show_standard(self):
         self.calculators.setCurrentWidget(self.standard_calculator)
+        print("Hello world")
 
     def show_scientific(self):
         self.calculators.setCurrentWidget(self.scientific_calculator)
-
-class ScientificCalculator(QtWidgets.QWidget):
-    def __init__(self):
-        super().__init__()
-
-        layout = QtWidgets.QVBoxLayout(self)
-
-        self.display = QtWidgets.QLineEdit()
-        layout.addWidget(self.display)
-
-        # Your scientific calculator HisBtns go here
-        layout.addWidget(QtWidgets.QPushButton("Scientific Calculator"))
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])

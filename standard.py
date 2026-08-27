@@ -11,7 +11,6 @@ class StandardCalculator(QtWidgets.QWidget):
         self.Num1 = None
         self.Operator = None
         self.Num2 = None
-        self.error_state = False
         self.waiting_for_num2 = False
 
         layout = QtWidgets.QVBoxLayout(self)
@@ -65,10 +64,7 @@ class StandardCalculator(QtWidgets.QWidget):
                     button.setIcon(qta.icon("fa5s.backspace"))
                     button.setIconSize(QtCore.QSize(18, 18))
 
-                    button.clicked.connect(
-                        lambda _, v=text: self.operation_clicked(v)
-                    )
-
+                    button.clicked.connect(lambda _, v=text: self.operation_clicked(v))
                 else:
                     button.setText(text)
 
@@ -76,28 +72,20 @@ class StandardCalculator(QtWidgets.QWidget):
                     if text == "=":
                         button.setStyleSheet(""" QPushButton {
                                 background-color: #FF0033;
-                                color: white;
-                            }
+                                color: white;}
 
                             QPushButton:hover {
-                                background-color: #CC0029;
-                            }
+                                background-color: #CC0029;}
 
                             QPushButton:pressed {
-                                background-color: #99001F;
-                            } """)
+                                background-color: #99001F; } """)
 
                     # Number buttons
                     if text.isdigit() or text == ".":
-                        button.clicked.connect(
-                            lambda _, v=text: self.number_clicked(v)
-                        )
-
+                        button.clicked.connect(lambda _, v=text: self.number_clicked(v))
                     # Operation buttons
                     else:
-                        button.clicked.connect(
-                            lambda _, v=text: self.operation_clicked(v)
-                        )
+                        button.clicked.connect(lambda _, v=text: self.operation_clicked(v))
 
                 ButtonGrid.addWidget(button, row, col)
 
@@ -114,10 +102,6 @@ class StandardCalculator(QtWidgets.QWidget):
 
     # Number buttons
     def number_clicked(self, number):
-        if self.error_state:
-            self.CalTxt.setText("0")
-            self.error_state = False
-
         current = self.CalTxt.text()
 
         if self.waiting_for_num2:
@@ -135,15 +119,7 @@ class StandardCalculator(QtWidgets.QWidget):
 
     # Operations
     def operation_clicked(self, operation):
-
         current_text = self.CalTxt.text()
-
-        # Make sure we have a valid number
-        try:
-            current_number = float(current_text)
-        except ValueError:
-            self.CalTxt.setText("Error")
-            return
 
         # Clear
         if operation == "C":
@@ -151,19 +127,15 @@ class StandardCalculator(QtWidgets.QWidget):
             self.Num2 = None
             self.Operator = None
 
-            self.error_state = False
-            self.waiting_for_num2 = False
-
             self.CalTxt.setText("0")
             self.calTrackerLbl.setText("")
             self.calTrackerLbl.setVisible(False)
+            self.waiting_for_num2 = False
             return
-        
+
         # Clear Entry
         if operation == "CE":
             self.CalTxt.setText("0")
-
-            self.error_state = False
             self.waiting_for_num2 = False
             return
 
@@ -171,11 +143,23 @@ class StandardCalculator(QtWidgets.QWidget):
         if operation == "backspace":
             current = self.CalTxt.text()
 
+            # If we're displaying an error, just reset it
+            if current == "Error":
+                self.CalTxt.setText("0")
+                return
+
             if len(current) > 1:
                 self.CalTxt.setText(current[:-1])
             else:
                 self.CalTxt.setText("0")
 
+            return
+
+        # Make sure we have a valid number
+        try:
+            current_number = float(current_text)
+        except ValueError:
+            self.CalTxt.setText("Error")
             return
 
         # Positive / Negative
@@ -190,10 +174,7 @@ class StandardCalculator(QtWidgets.QWidget):
         # Percentage
         if operation == "%":
             result = current_number / 100
-
-            self.CalTxt.setText(
-                self.format_number(result)
-            )
+            self.CalTxt.setText(self.format_number(result))
 
             return
 
@@ -204,21 +185,17 @@ class StandardCalculator(QtWidgets.QWidget):
                 return
 
             result = 1 / current_number
-
-            self.CalTxt.setText(
-                self.format_number(result)
-            )
-
+            self.calTrackerLbl.setText(f"1/({current_number})")
+            self.calTrackerLbl.setVisible(True)
+            self.CalTxt.setText(self.format_number(result))
             return
 
         # x²
         if operation == "x²":
-            result = current_number ** 2
-
-            self.CalTxt.setText(
-                self.format_number(result)
-            )
-
+            result = current_number ** 2        
+            self.calTrackerLbl.setText(f"sqr({current_number})")
+            self.calTrackerLbl.setVisible(True)
+            self.CalTxt.setText(self.format_number(result))
             return
 
         # √x
@@ -228,11 +205,9 @@ class StandardCalculator(QtWidgets.QWidget):
                 return
 
             result = current_number ** 0.5
-
-            self.CalTxt.setText(
-                self.format_number(result)
-            )
-
+            self.calTrackerLbl.setText(f"√({current_number})")
+            self.calTrackerLbl.setVisible(True)
+            self.CalTxt.setText(self.format_number(result))
             return
 
         # Equals
@@ -241,20 +216,14 @@ class StandardCalculator(QtWidgets.QWidget):
                 return
 
             self.Num2 = current_number
-
-            result = self.calculate(
-                self.Num1,
-                self.Operator,
-                self.Num2
-            )
+            result = self.calculate(self.Num1,self.Operator,self.Num2)
 
             if result is None:
                 self.CalTxt.setText("Error")
                 return
 
             self.calTrackerLbl.setText(f"{self.format_number(self.Num1)} " f"{self.Operator} " f"{self.format_number(self.Num2)}")
-
-            self.CalTxt.setText(                self.format_number(result)            )
+            self.CalTxt.setText(self.format_number(result))
 
             self.Num1 = result
             self.Num2 = None
@@ -273,7 +242,6 @@ class StandardCalculator(QtWidgets.QWidget):
 
                 if result is None:
                     self.CalTxt.setText("Error")
-                    self.error_state = True
                     return
 
                 self.Num1 = result
