@@ -13,21 +13,29 @@ class StandardCalculator(QtWidgets.QWidget):
         self.Num2 = None
         self.waiting_for_num2 = False
 
-        layout = QtWidgets.QVBoxLayout(self)
-        TopRow = QtWidgets.QHBoxLayout()
-        MainRow = QtWidgets.QVBoxLayout()
+        #Create the main layout of two columns for the main content/standard calculator
+        #Second panel will be the history panel
+        mainLayout = QtWidgets.QHBoxLayout()
+        
+        layout = QtWidgets.QVBoxLayout() #For the main content, this will be have the standard calculator
+        TopRow = QtWidgets.QHBoxLayout() #This is for the top part of the layout, this will hold the Standard Label and the History button
+        MainRow = QtWidgets.QVBoxLayout() #The Textbox, Small label and the Buttons layout
 
+        #Standard Label
         self.Lbl = QtWidgets.QLabel("Standard")
         fontType = QtGui.QFont("Arial", 14)
         fontType.setBold(True)
         self.Lbl.setFont(fontType)
 
+        #History Button
         self.HisBtn = QtWidgets.QPushButton()
-        self.HisBtn.setIcon(qta.icon("fa5s.history"))
+        self.HisBtn.setIcon(qta.icon("fa5s.history")) #This is history icon
         self.HisBtn.setIconSize(QtCore.QSize(15, 15))
         self.HisBtn.setToolTip("History")
         self.HisBtn.setFixedSize(40, 40)
+        #ViewHisFun = 
 
+        #The input box to display and calculate
         self.CalTxt = QtWidgets.QLineEdit("0")
         self.CalTxt.setFixedHeight(55)
         self.CalTxt.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
@@ -36,15 +44,18 @@ class StandardCalculator(QtWidgets.QWidget):
         validator = QtGui.QDoubleValidator(0, 999999, 10)
         self.CalTxt.setValidator(validator)
 
+        #This will display what you are calculating
         self.calTrackerLbl = QtWidgets.QLabel("0+0")
         smallLbl = QtGui.QFont("Arial", 10)
         self.calTrackerLbl.setStyleSheet("color: gray;")
         self.calTrackerLbl.setFont(smallLbl)
         self.calTrackerLbl.setVisible(False)
 
+        #Creates a grid layout for the buttons that are listed on the buttons list
         ButtonGrid = QtWidgets.QGridLayout()
         BtnFont = QtGui.QFont("Arial", 15)
 
+        #The list of buttons for the Standard Calculator
         buttons = [
             ["%", "CE", "C", "backspace"],
             ["1/x", "x²", "√x", "÷"],
@@ -53,14 +64,14 @@ class StandardCalculator(QtWidgets.QWidget):
             ["1", "2", "3", "+"],
             ["±", "0", ".", "="],]
 
+        #Run a for loop to add the buttons as listed in the buttons list
         for row, button_row in enumerate(buttons):
             for col, text in enumerate(button_row):
-
                 button = QtWidgets.QPushButton()
                 button.setFont(BtnFont)
                 button.setFixedHeight(50)
 
-                if text == "backspace":
+                if text == "backspace": #If the button is called "backspace", convert it into an icon
                     button.setIcon(qta.icon("fa5s.backspace"))
                     button.setIconSize(QtCore.QSize(18, 18))
 
@@ -80,25 +91,36 @@ class StandardCalculator(QtWidgets.QWidget):
                             QPushButton:pressed {
                                 background-color: #99001F; } """)
 
-                    # Number buttons
+                    # Number buttons 0123456789
                     if text.isdigit() or text == ".":
                         button.clicked.connect(lambda _, v=text: self.number_clicked(v))
-                    # Operation buttons
+                    # Operation buttons +-*/=
                     else:
                         button.clicked.connect(lambda _, v=text: self.operation_clicked(v))
 
                 ButtonGrid.addWidget(button, row, col)
 
-        layout.addLayout(TopRow)
-        layout.addLayout(MainRow)
+        layout.addLayout(TopRow) #Add the TopRow into layout
+        layout.addLayout(MainRow) #Add the MainRow into layout
 
+        #Add the label and the button into the TopRow
         TopRow.addWidget(self.Lbl)
         TopRow.addWidget(self.HisBtn)
 
+        #Add the Textbox, Label and the button grid layout with its buttons into the MainRow
         MainRow.addWidget(self.CalTxt)
-        MainRow.addWidget(self.calTrackerLbl, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
+        MainRow.addWidget(self.calTrackerLbl, alignment=QtCore.Qt.AlignmentFlag.AlignRight)        
         layout.setAlignment(MainRow, QtCore.Qt.AlignmentFlag.AlignTop)
+        #Add the ButtonGrid to layout
         layout.addLayout(ButtonGrid)
+
+        mainLayout.addLayout(layout, 3)
+        self.historyPanel = HistoryPanel()
+        self.historyPanel.hide()
+        mainLayout.addWidget(self.historyPanel, 1)
+        self.setLayout(mainLayout)
+        
+        self.HisBtn.clicked.connect(self.historyPanel.show_History)
 
     # Number buttons
     def number_clicked(self, number):
@@ -273,8 +295,34 @@ class StandardCalculator(QtWidgets.QWidget):
 
     # Format numbers nicely
     def format_number(self, number):
-
         if number == int(number):
             return str(int(number))
-
         return str(number)
+
+
+#The history panel on the side
+class HistoryPanel(QtWidgets.QFrame):
+    def __init__(self):
+        super().__init__()
+
+        self.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.setMinimumWidth(300)
+
+        layout = QtWidgets.QVBoxLayout(self)
+        font = QtGui.QFont("Arial", 14)
+
+        # Title
+        title = QtWidgets.QLabel("History")
+        font.setBold(True)
+        title.setFont(font)
+
+        # Listbox
+        self.historyList = QtWidgets.QListWidget()
+        self.historyList.setFont(QtGui.QFont("Arial", 11))
+
+        layout.addWidget(title)
+        layout.addWidget(self.historyList)
+
+    def toggle_history(self):
+        self.setVisible(not self.isVisible())

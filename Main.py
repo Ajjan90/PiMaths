@@ -9,7 +9,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.resize(340, 450)
+        self.resize(440, 450)
         self.setWindowTitle("Calculator")
 
         #The MenuBar
@@ -125,7 +125,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def show_standard(self):
         self.calculators.setCurrentWidget(self.standard_calculator)
-        print("Hello world")
 
     def show_scientific(self):
         self.calculators.setCurrentWidget(self.scientific_calculator)
