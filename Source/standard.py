@@ -1,5 +1,5 @@
 from PySide6 import QtWidgets, QtCore, QtGui
-from Main import MainWindow
+#from Main import MainWindow
 import qtawesome as qta
 
 #to store the calculation into this List
