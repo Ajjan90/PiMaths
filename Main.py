@@ -2,38 +2,20 @@ from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QLabel
 import qtawesome as qta
 
-from standard import StandardCalculator
-from scientific import ScientificCalculator
+from Source.standard import StandardCalculator
+from Source.scientific import ScientificCalculator
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.resize(440, 450)
+        self.resize(420, 450)
         self.setWindowTitle("Calculator")
 
         #The MenuBar
         #The starting of the menubar
         self.menu_Bar = QtWidgets.QMenuBar(self)
         self.setMenuBar(self.menu_Bar)
-
-        #Edit Menu dropdown and its submenus
-        self.EditMenu = QtWidgets.QMenu("Edit", self)
-        self.CopyAction = QtGui.QAction("Copy", self) #Copy
-        self.CopyAction.setIcon(qta.icon("fa5s.copy"))
-        self.CopyAction.setShortcut("Ctrl+C")
-        
-        self.PasteAction = QtGui.QAction("Paste", self) # Paste
-        self.PasteAction.setIcon(qta.icon("fa5s.paste"))
-        self.PasteAction.setShortcut("Ctrl+V")
-
-        self.CutAction = QtGui.QAction("Cut", self) # Cut
-        self.CutAction.setIcon(qta.icon("fa5s.cut"))
-        self.CutAction.setShortcut("Ctrl+X")
-
-        self.SelectAction = QtGui.QAction("Select All", self) #Select All
-        self.SelectAction.setIcon(qta.icon("fa5s.border-all"))
-        self.SelectAction.setShortcut("Ctrl+A")
 
         #View Menu dropdown and its submenus
         self.ViewMenu = QtWidgets.QMenu("View", self)
@@ -83,10 +65,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.AboutMenu = QtGui.QAction("About", self) #About
 
         #Edit menu and its menuitems
-        self.menu_Bar.addMenu(self.EditMenu)
-        edit_actions = [self.CopyAction, self.PasteAction, self.CutAction, self.SelectAction]
-        for action in edit_actions:
-            self.EditMenu.addAction(action)
+        #self.menu_Bar.addMenu(self.EditMenu)
+        #edit_actions = [self.CopyAction, self.PasteAction, self.CutAction, self.SelectAction]
+        #for action in edit_actions:
+        #    self.EditMenu.addAction(action)
 
         #View menu and its menuitems
         self.menu_Bar.addMenu(self.ViewMenu)
