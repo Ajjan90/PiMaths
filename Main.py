@@ -93,8 +93,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.standard_calculator = StandardCalculator()
         self.scientific_calculator = ScientificCalculator()
 
-        self.calculators.addWidget(self.standard_calculator)
-        self.calculators.addWidget(self.scientific_calculator)
 
         self.setCentralWidget(self.calculators)
 
@@ -105,11 +103,26 @@ class MainWindow(QtWidgets.QMainWindow):
         # Start with Standard
         self.show_standard()
 
-    def show_standard(self):
-        self.calculators.setCurrentWidget(self.standard_calculator)
+    def ClearCurrentFrame(self):
+        current = self.calculators.currentWidget()
+        if current is not None:
+            self.calculators.removeWidget(current)
 
+    # Display Standard    
+    def show_standard(self):
+        self.ClearCurrentFrame()
+        self.calculators.addWidget(self.standard_calculator)
+        self.calculators.setCurrentWidget(self.standard_calculator)
+        self.adjustSize()
+
+
+    # Display Scientific
     def show_scientific(self):
+        self.ClearCurrentFrame()
+        self.calculators.addWidget(self.scientific_calculator)
         self.calculators.setCurrentWidget(self.scientific_calculator)
+        self.adjustSize()
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
