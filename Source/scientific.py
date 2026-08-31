@@ -1,12 +1,15 @@
 #The scientific calculator's code uses the same code as the Standard calculator's code but with more features added
 
 from PySide6 import QtWidgets, QtCore, QtGui
-#from Main import MainWindow
+from PySide6.QtGui import QAction
 import qtawesome as qta
 import math
 
 #to store the calculation into this List
 CalHisList = []
+
+#to store the resulted number into a memory
+CalMemList = []
 
 class ScientificCalculator(QtWidgets.QWidget):
     def __init__(self):
@@ -53,22 +56,53 @@ class ScientificCalculator(QtWidgets.QWidget):
         self.calTrackerLbl.setStyleSheet("color: gray;")
         self.calTrackerLbl.setVisible(False)
 
-        #Trigonometry, Memory
-        self.ComboRow = QtWidgets.QHBoxLayout() #To hold the comboboxes
+        # Trigonometry, Memory
+        self.BtnDropRow = QtWidgets.QHBoxLayout()  # To hold the dropdown buttons
 
-        #Trigonometry Combobox with Sin,Cos,Tan and its other -1 components
-        self.TriCombo = QtWidgets.QComboBox()
-        self.TriCombo.setPlaceholderText("Trigonometry options")
-        self.TriCombo.addItems(["sin", "cos", "tan", "sin-1", "cos-1", "tan-1"])
-        self.TriCombo.insertSeparator(3)
+        # Trigonometry Button
+        self.TriButton = QtWidgets.QPushButton("Trigonometry")
+        self.TriMenu = QtWidgets.QMenu(self.TriButton)
+        self.SinAction = QtGui.QAction("sin", self)
+        self.CosAction = QtGui.QAction("cos", self)
+        self.TanAction = QtGui.QAction("tan", self)
+        self.SinInverseAction = QtGui.QAction("sin⁻¹", self)
+        self.CosInverseAction = QtGui.QAction("cos⁻¹", self)
+        self.TanInverseAction = QtGui.QAction("tan⁻¹", self)
 
-        self.MemCombo = QtWidgets.QComboBox()
-        self.MemCombo.setPlaceholderText("Memory options")
-        self.MemCombo.addItems(["MC (Memory Clear)", "MR (Memory Reset)", "M+ (Memory Add)", "M- (Memory Subtract)", "MS (Memory Store)"])        
+        #Apply the trigger functions for each action item
+        self.SinAction.triggered.connect(lambda: self.SinFunction())
+        self.CosAction.triggered.connect(lambda: self.CosFunction())
+        self.TanAction.triggered.connect(lambda: self.TanFunction())
+        self.SinInverseAction.triggered.connect(lambda: self.SinInverseFunction())
+        self.CosInverseAction.triggered.connect(lambda: self.CosInverseFunction())
+        self.TanInverseAction.triggered.connect(lambda: self.TanInverseFunction())
 
-        #Add the Trigonometry and the Memory combobox into the row
-        self.ComboRow.addWidget(self.TriCombo)
-        self.ComboRow.addWidget(self.MemCombo)
+        #Add actions to menu
+        self.TriMenu.addAction(self.SinAction)
+        self.TriMenu.addAction(self.CosAction)
+        self.TriMenu.addAction(self.TanAction)
+        self.TriMenu.addSeparator()
+        self.TriMenu.addAction(self.SinInverseAction)
+        self.TriMenu.addAction(self.CosInverseAction)
+        self.TriMenu.addAction(self.TanInverseAction)
+
+        # Attach menu to button
+        self.TriButton.setMenu(self.TriMenu)
+
+
+        # Memory Button
+        self.MemButton = QtWidgets.QPushButton("Memory")
+        self.MemMenu = QtWidgets.QMenu(self.MemButton)
+        self.MemMenu.addAction("MC (Memory Clear)")
+        self.MemMenu.addAction("MR (Memory Recall)")
+        self.MemMenu.addAction("M+ (Memory Add)")
+        self.MemMenu.addAction("M- (Memory Subtract)")
+        self.MemMenu.addAction("MS (Memory Store)")
+        self.MemButton.setMenu(self.MemMenu)
+
+        # Add the dropdown buttons into the row
+        self.BtnDropRow.addWidget(self.TriButton)
+        self.BtnDropRow.addWidget(self.MemButton)
 
         #The grid layout for the buttons
         buttonGrid = QtWidgets.QGridLayout()
@@ -78,10 +112,10 @@ class ScientificCalculator(QtWidgets.QWidget):
             ["x³", "π", "e", "(", ")"],
             ["³√x", "%", "CE", "C", "backspace"],
             ["n!", "1/x", "x²", "√x", "÷"],
-            ["x^y", "7", "8", "9", "×"],
-            ["ln", "4", "5", "6", "−"],
-            ["log", "1", "2", "3", "+"],
-            ["Rnd", "±", "0", ".", "="]
+            ["10^x", "7", "8", "9", "×"],
+            ["Mod", "4", "5", "6", "−"],
+            ["tau", "1", "2", "3", "+"],
+            ["log", "±", "0", ".", "="]
         ]
 
         #Display the buttons as listed on the buttons list
@@ -127,7 +161,7 @@ class ScientificCalculator(QtWidgets.QWidget):
         #Add the Textbox, Label and the buttongrid
         mainRow.addWidget(self.CalTxt)
         mainRow.addWidget(self.calTrackerLbl, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
-        mainRow.addLayout(self.ComboRow)
+        mainRow.addLayout(self.BtnDropRow)
         mainRow.addLayout(buttonGrid)
 
         layout.addLayout(topRow)
@@ -135,273 +169,112 @@ class ScientificCalculator(QtWidgets.QWidget):
 
         # History panel
         self.historyPanel = QtWidgets.QFrame()
-
-        self.historyPanel.setFrameShape(
-            QtWidgets.QFrame.Shape.StyledPanel
-        )
-
-        self.historyPanel.setFrameShadow(
-            QtWidgets.QFrame.Shadow.Raised
-        )
-
+        self.historyPanel.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.historyPanel.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.historyPanel.setMinimumWidth(300)
 
-
-        # ==========================================================
         # Tab control
-        # ==========================================================
-
         self.tabControl = QtWidgets.QTabWidget()
-
-        # History tab
-        self.HisTab = QtWidgets.QWidget()
-
-        # Memory tab
-        self.MemTab = QtWidgets.QWidget()
+        self.HisTab = QtWidgets.QWidget() #History tab
+        self.MemTab = QtWidgets.QWidget() # Memory tab
 
         # Add tabs
-        self.tabControl.addTab(
-            self.HisTab,
-            "History"
-        )
+        self.tabControl.addTab(self.HisTab, "History")
+        self.tabControl.addTab(self.MemTab, "Memory")
 
-        self.tabControl.addTab(
-            self.MemTab,
-            "Memory"
-        )
-
-
-        # ==========================================================
         # History tab layout
-        # ==========================================================
+        historyLayout = QtWidgets.QVBoxLayout(self.HisTab)
 
-        historyLayout = QtWidgets.QVBoxLayout(
-            self.HisTab
-        )
-
-
-        # ==========================================================
         # History top row
-        # ==========================================================
-
         historyTopRow = QtWidgets.QHBoxLayout()
-
+        TitleFont = QtGui.QFont("Arial", 14)
+        TitleFont.setBold(True)
 
         # History title
-        historyTitle = QtWidgets.QLabel(
-            "History"
-        )
-
-        historyFont = QtGui.QFont(
-            "Arial",
-            14
-        )
-
-        historyFont.setBold(True)
-
-        historyTitle.setFont(
-            historyFont
-        )
-
+        historyTitle = QtWidgets.QLabel("History")
+        historyTitle.setFont(TitleFont)
 
         # Clear history button
         self.DelBtn = QtWidgets.QPushButton()
+        self.DelBtn.setIcon(qta.icon("fa5s.trash"))
+        self.DelBtn.setIconSize(QtCore.QSize(15, 15))
+        self.DelBtn.setToolTip("Clear All History")
+        self.DelBtn.setFixedSize(40, 40)
+        self.DelBtn.clicked.connect(self.clear_history)
 
-        self.DelBtn.setIcon(
-            qta.icon("fa5s.trash")
-        )
-
-        self.DelBtn.setIconSize(
-            QtCore.QSize(15, 15)
-        )
-
-        self.DelBtn.setToolTip(
-            "Clear All"
-        )
-
-        self.DelBtn.setFixedSize(
-            40,
-            40
-        )
-
-        self.DelBtn.clicked.connect(
-            self.clear_history
-        )
-
-
-        # ==========================================================
         # History list
-        # ==========================================================
-
         self.historyList = QtWidgets.QListWidget()
-
-        self.historyList.setFont(
-            QtGui.QFont(
-                "Arial",
-                11
-            )
-        )
-
-
-        # Double-click history item
-        self.historyList.itemDoubleClicked.connect(
-            self.get_cal_item
-        )
-
+        self.historyList.setFont(QtGui.QFont("Arial", 11))
+        self.historyList.itemDoubleClicked.connect(self.get_cal_item) # Double-click history item
 
         # Context menu
-        self.historyList.setContextMenuPolicy(
-            QtCore.Qt.ContextMenuPolicy.CustomContextMenu
-        )
+        self.historyList.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self.historyList.customContextMenuRequested.connect(self.show_history_context_menu)
+        
+        self.copyAction = QtGui.QAction("Copy", self) # Copy action
+        self.copyAction.setShortcut(QtGui.QKeySequence.Copy)
+        self.copyAction.setShortcutContext(QtCore.Qt.ShortcutContext.WidgetShortcut)
+        self.copyAction.triggered.connect(self.copy_history_item)
+        self.historyList.addAction(self.copyAction)
 
-        self.historyList.customContextMenuRequested.connect(
-            self.show_history_context_menu
-        )
+        self.deleteAction = QtGui.QAction("Delete", self) # Delete action
+        self.deleteAction.setShortcut(QtGui.QKeySequence.Delete)
+        self.deleteAction.setShortcutContext(QtCore.Qt.ShortcutContext.WidgetShortcut)
+        self.deleteAction.triggered.connect(self.delete_selected_history_item)
+        self.historyList.addAction(self.deleteAction)
 
-
-        # ==========================================================
-        # Copy action
-        # ==========================================================
-
-        self.copyAction = QtGui.QAction(
-            "Copy",
-            self
-        )
-
-        self.copyAction.setShortcut(
-            QtGui.QKeySequence.Copy
-        )
-
-        self.copyAction.setShortcutContext(
-            QtCore.Qt.ShortcutContext.WidgetShortcut
-        )
-
-        self.copyAction.triggered.connect(
-            self.copy_history_item
-        )
-
-        self.historyList.addAction(
-            self.copyAction
-        )
-
-
-        # ==========================================================
-        # Delete action
-        # ==========================================================
-
-        self.deleteAction = QtGui.QAction(
-            "Delete",
-            self
-        )
-
-        self.deleteAction.setShortcut(
-            QtGui.QKeySequence.Delete
-        )
-
-        self.deleteAction.setShortcutContext(
-            QtCore.Qt.ShortcutContext.WidgetShortcut
-        )
-
-        self.deleteAction.triggered.connect(
-            self.delete_selected_history_item
-        )
-
-        self.historyList.addAction(
-            self.deleteAction
-        )
-
-
-        # ==========================================================
         # Add widgets to History top row
-        # ==========================================================
-
-        historyTopRow.addWidget(
-            historyTitle
-        )
-
+        historyTopRow.addWidget(historyTitle)
         historyTopRow.addStretch()
+        historyTopRow.addWidget(self.DelBtn)
 
-        historyTopRow.addWidget(
-            self.DelBtn
-        )
-
-
-        # ==========================================================
         # Add History content to History tab
-        # ==========================================================
+        historyLayout.addLayout(historyTopRow)
+        historyLayout.addWidget(self.historyList)
 
-        historyLayout.addLayout(
-            historyTopRow
-        )
-
-        historyLayout.addWidget(
-            self.historyList
-        )
-
-
-        # ==========================================================
         # Memory tab
-        # ==========================================================
-        #
-        # Leave this empty for now.
-        # You can add the Memory UI here later.
-        #
+        memoryLayout = QtWidgets.QVBoxLayout(self.MemTab)
+        MemTopRow = QtWidgets.QHBoxLayout() #Memory Top Row        
 
-        memoryLayout = QtWidgets.QVBoxLayout(
-            self.MemTab
-        )
+        #Memory Title
+        self.MemTitle = QtWidgets.QLabel("Memory")
+        self.MemTitle.setFont(TitleFont)
 
+        #Clear Memory Button
+        ClearMemBtn = QtWidgets.QPushButton(self)
+        ClearMemBtn.setIcon(qta.icon("fa5s.trash"))
+        ClearMemBtn.setIconSize(QtCore.QSize(15, 15))
+        ClearMemBtn.setToolTip("Clear All Memory")
+        ClearMemBtn.setFixedSize(40, 40)
+        #self.DelBtn.clicked.connect(self.clear_history)
 
-        # ==========================================================
+        #Memory Listbox
+        MemList = QtWidgets.QListWidget(self)
+        MemList.setFont(QtGui.QFont("Arial", 11))
+
+        #Add the widgets to the MemTopRow (Title and the Clear Button)
+        MemTopRow.addWidget(self.MemTitle)
+        MemTopRow.addStretch()
+        MemTopRow.addWidget(ClearMemBtn)
+
+        #Add the widgets to the Memory Layout
+        memoryLayout.addLayout(MemTopRow)
+        memoryLayout.addWidget(MemList)
+
         # Put the TabWidget inside the History panel
-        # ==========================================================
+        historyPanelLayout = QtWidgets.QVBoxLayout(self.historyPanel)
+        historyPanelLayout.setContentsMargins(0, 0, 0, 0)
+        historyPanelLayout.addWidget(self.tabControl)
 
-        historyPanelLayout = QtWidgets.QVBoxLayout(
-            self.historyPanel
-        )
-
-        historyPanelLayout.setContentsMargins(
-            0,
-            0,
-            0,
-            0
-        )
-
-        historyPanelLayout.addWidget(
-            self.tabControl
-        )
-
-
-        # ==========================================================
         # Initially hide History panel
-        # ==========================================================
-
         self.historyPanel.hide()
 
-
-        # ==========================================================
         # Add calculator + history panel to main layout
-        # ==========================================================
+        mainLayout.addLayout(layout, 3)
+        mainLayout.addWidget(self.historyPanel, 1)
 
-        mainLayout.addLayout(
-            layout,
-            3
-        )
-
-        mainLayout.addWidget(
-            self.historyPanel,
-            1
-        )
-
-
-        # ==========================================================
         # Event filter
-        # ==========================================================
-
-        QtWidgets.QApplication.instance().installEventFilter(
-            self
-        )
-
+        QtWidgets.QApplication.instance().installEventFilter(self)
 
     #The function to run an keypress event
     #If the user uses the keyborad to input their calculations
@@ -481,7 +354,6 @@ class ScientificCalculator(QtWidgets.QWidget):
 
     #For the buttons, define what is being clicked as a number
     def number_clicked(self, number):
-
         current = self.CalTxt.text()
 
         # Expression mode
@@ -490,37 +362,23 @@ class ScientificCalculator(QtWidgets.QWidget):
                 current_number = ""
                 for char in reversed(self.expression):
                     if char.isdigit() or char == ".":
-                        current_number = (
-                            char + current_number
-                        )
+                        current_number = (char + current_number)
                     else:
                         break
                 if "." in current_number:
                     return
 
-            if (
-                self.expression
-                and self.expression[-1] == ")"
-            ):
+            if (self.expression and self.expression[-1] == ")"):
                 self.expression += "×"
 
             self.expression += number
-
-            self.CalTxt.setText(
-                self.expression
-            )
-
+            self.CalTxt.setText(self.expression)
             return
 
         # Normal calculator mode
         if self.waiting_for_num2:
-
-            self.CalTxt.setText(
-                number
-            )
-
+            self.CalTxt.setText(number)
             self.waiting_for_num2 = False
-
             return
 
         # Prevent multiple decimal points
@@ -529,14 +387,9 @@ class ScientificCalculator(QtWidgets.QWidget):
 
         # Replace initial zero
         if current == "0" and number != ".":
-            self.CalTxt.setText(
-                number
-            )
-
+            self.CalTxt.setText(number)
         else:
-            self.CalTxt.setText(
-                current + number
-            )
+            self.CalTxt.setText(current + number)
 
     #For the buttons, define what is being clicked as an operator like +-*/= C CE and others
     def operation_clicked(self, operation):
@@ -649,7 +502,6 @@ class ScientificCalculator(QtWidgets.QWidget):
 
                 self.expression += str(math.pi)
                 self.CalTxt.setText(self.expression)
-
                 return
 
             # e
@@ -674,7 +526,7 @@ class ScientificCalculator(QtWidgets.QWidget):
             self.CalTxt.setText(self.format_number(current_number))
             return
 
-        # PERCENT
+        # Percentage
         if operation == "%":
             result = current_number / 100
             self.CalTxt.setText(self.format_number(result))
@@ -698,7 +550,7 @@ class ScientificCalculator(QtWidgets.QWidget):
             self.UpdateHistoryList()
             return
 
-        # SQUARE
+        #Square
         if operation == "x²":
             result = current_number ** 2
             number = self.format_number(current_number)
@@ -710,7 +562,19 @@ class ScientificCalculator(QtWidgets.QWidget):
             self.UpdateHistoryList()
             return
 
-        # SQUARE ROOT
+        #Cube
+        if operation == "x³":
+            result = current_number ** 3
+            number = self.format_number(current_number)
+            resultText = self.format_number(result)
+            self.calTrackerLbl.setText(f"Cube({number})")
+            self.calTrackerLbl.show()
+            self.CalTxt.setText(resultText)
+            CalHisList.insert(0, f"Cube({number}) = {resultText}")
+            self.UpdateHistoryList()
+            return
+
+        #Square Root
         if operation == "√x":
             if current_number < 0:
                 self.CalTxt.setText("Error")
@@ -726,9 +590,31 @@ class ScientificCalculator(QtWidgets.QWidget):
             self.UpdateHistoryList()
             return
 
-        # PI
+        #Cube Root
+        if operation == "³√x":
+            if current_number < 0:
+                self.CalTxt.setText("Error")
+                return
+
+            result = current_number ** (1/3)
+            number = self.format_number(current_number)
+            resultText = self.format_number(result)
+            self.calTrackerLbl.setText(f"³√({number})")
+            self.calTrackerLbl.show()
+            self.CalTxt.setText(resultText)
+            CalHisList.insert(0, f"³√({number}) = {resultText}")
+            self.UpdateHistoryList()
+            return
+
+        # Pi
         if operation == "π":
             result = self.format_number(math.pi)
+            self.CalTxt.setText(result)
+            return
+
+        #tau
+        if operation == "tau":
+            result = self.format_number(math.tau)
             self.CalTxt.setText(result)
             return
 
@@ -736,6 +622,51 @@ class ScientificCalculator(QtWidgets.QWidget):
         if operation == "e":
             result = self.format_number(math.e)
             self.CalTxt.setText(result)
+            return
+
+        #10^x
+        if operation == "10^x":
+            result = self.format_number(10 ** current_number)
+            number = self.format_number(current_number)
+            self.calTrackerLbl.setText(f"10^({self.format_number(number)})")
+            self.calTrackerLbl.show()
+            self.CalTxt.setText(result)
+            CalHisList.insert(0, f"10^({self.format_number(number)}) = {self.format_number(result)}")
+            self.UpdateHistoryList()
+            return
+
+        #Factorial
+        if operation == "n!":
+            number = self.format_number(current_number)
+            result = math.factorial(float(number))
+            self.CalTxt.setText(self.format_number(result))
+            self.calTrackerLbl.setText(f"fact({number})")
+            self.calTrackerLbl.show()
+            CalHisList.insert(0, f"fact({number}) = {self.format_number(result)}")
+            self.UpdateHistoryList()
+            return
+
+       # Modulo / Remainder
+        if operation == "Mod":
+            number = self.format_number(current_number)
+            FirstNum = self.format_number(self.Num1)
+            result = math.fmod(int(FirstNum), int(number))
+            self.CalTxt.setText(self.format_number(result))
+            self.calTrackerLbl.setText(f"{FirstNum} MOD {number}")
+            self.calTrackerLbl.show()
+            CalHisList.insert(0, f"{FirstNum} MOD {number} = {self.format_number(result)}")
+            self.UpdateHistoryList()
+            return
+
+        #Logomathric (log)
+        if operation == "log":
+            number = self.format_number(current_number)
+            result = math.log10(int(number))
+            self.CalTxt.setText(self.format_number(result))
+            self.calTrackerLbl.setText(f"log10({number})")
+            self.calTrackerLbl.show()
+            CalHisList.insert(0, f"log10({number}) = {result}")
+            self.UpdateHistoryList()
             return
 
         # EQUALS
@@ -971,3 +902,78 @@ class ScientificCalculator(QtWidgets.QWidget):
 
             if row < len(CalHisList):
                 del CalHisList[row]
+    
+    #Trigonometry functions sin,cos,tan, sin-1, cos-1 and tan-1
+    def SinFunction(self):
+        value = float(self.CalTxt.text())
+
+        result = math.sin(math.radians(value))
+        resultText = self.format_number(result)
+        numberText = self.format_number(value)
+
+        self.CalTxt.setText(resultText)
+        self.calTrackerLbl.setText(f"sin({numberText})")
+        self.calTrackerLbl.show()
+
+        CalHisList.insert(0, f"sin({numberText}) = {resultText}")
+
+    def CosFunction(self):
+        value = float(self.CalTxt.text())
+        result = math.cos(math.radians(value))
+        resultText = self.format_number(result)
+        numbertext = self.format_number(value)
+
+        self.CalTxt.setText(resultText)
+        self.calTrackerLbl.setText(f"cos({numbertext})")
+        self.calTrackerLbl.show()
+
+        CalHisList.insert(0, f"cos({numbertext}) = {resultText}")
+
+    def TanFunction(self):
+        value = float(self.CalTxt.text())
+        result = math.tan(math.radians(value))
+        resultText = self.format_number(result)
+        numbertext = self.format_number(value)
+
+        self.CalTxt.setText(resultText)
+        self.calTrackerLbl.setText(f"tan({numbertext})")
+        self.calTrackerLbl.show()
+
+        CalHisList.insert(0, f"tan({numbertext}) = {resultText}")
+
+    def SinInverseFunction(self):
+        value = float(self.CalTxt.text())
+        result = math.asin(math.radians(value))
+        resultText = self.format_number(result)
+        numbertext = self.format_number(value)
+
+        self.CalTxt.setText(resultText)
+        self.calTrackerLbl.setText(f"sin-1({numbertext})")
+        self.calTrackerLbl.show()
+
+        CalHisList.insert(0, f"sin-1({numbertext}) = {resultText}")
+    
+    def CosInverseFunction(self):
+        value = float(self.CalTxt.text())
+        result = math.acos(math.radians(value))
+        resultText = self.format_number(result)
+        numbertext = self.format_number(value)
+
+        self.CalTxt.setText(resultText)
+        self.calTrackerLbl.setText(f"cos-1({numbertext})")
+        self.calTrackerLbl.show()
+
+        CalHisList.insert(0, f"cos-1({numbertext}) = {resultText}")
+    
+    def TanInverseFunction(self):
+        value = float(self.CalTxt.text())
+        result = math.atan(math.radians(value))
+        resultText = self.format_number(result)
+        numbertext = self.format_number(value)
+
+        self.CalTxt.setText(resultText)
+        self.calTrackerLbl.setText(f"tan-1({numbertext})")
+        self.calTrackerLbl.show()
+
+        CalHisList.insert(0, f"tan-1({numbertext}) = {resultText}")
+       
