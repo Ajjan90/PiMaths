@@ -1,5 +1,6 @@
 from PySide6 import QtWidgets, QtCore, QtGui
 import qtawesome as qta
+import math
 
 #to store the calculation into this List
 CalHisList = []
@@ -329,21 +330,23 @@ class StandardCalculator(QtWidgets.QWidget):
             self.UpdateHistoryList()
             return
 
+        # Square Root
         if operation == "√x":
             if current_number < 0:
-                self.CalTxt.setText("Error")
+                self.show_error()
                 return
 
-            result = current_number ** 0.5
-            number = self.format_number(current_number)
-            resultText = self.format_number(result)
-
-            self.calTrackerLbl.setText(f"√({number})")
-            self.calTrackerLbl.show()
-            self.CalTxt.setText(resultText)
-
-            CalHisList.insert(0, f"√({number}) = {resultText}")
-            self.UpdateHistoryList()
+            try:
+                result = math.sqrt(current_number)
+                numberText = self.format_number(current_number)
+                resultText = self.format_number(result)
+                self.CalTxt.setText(resultText)
+                self.calTrackerLbl.setText(f"√({numberText})")
+                self.calTrackerLbl.show()
+                CalHisList.insert(0, f"√({numberText}) = {resultText}")
+                self.UpdateHistoryList()
+            except (ValueError, OverflowError):
+                self.show_error()
             return
 
         if operation == "=":

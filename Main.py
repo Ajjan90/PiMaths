@@ -27,9 +27,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.SciView.setIcon(qta.icon("fa5s.flask"))
         self.SciView.setShortcut("Alt+1")
         
-        self.ProView = QtGui.QAction("Programmer", self) #Programming
-        self.ProView.setIcon(qta.icon("fa5s.code"))
-        self.ProView.setShortcut("Alt+2")
+        self.AveView = QtGui.QAction("Average", self) #Average
+        self.AveView.setIcon(qta.icon("fa5s.percentage"))
+        self.AveView.setShortcut("Alt+2")
         
         self.PaperView = QtGui.QAction("Paper Mode", self) #Paper Mode
         self.PaperView.setIcon(qta.icon("fa5s.file"))
@@ -72,7 +72,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #View menu and its menuitems
         self.menu_Bar.addMenu(self.ViewMenu)
-        view_actions = [self.StnView, self.SciView, self.ProView, self.PaperView]
+        view_actions = [self.StnView, self.SciView, self.AveView, self.PaperView]
         for action in view_actions:
             self.ViewMenu.addAction(action)
 
@@ -89,11 +89,6 @@ class MainWindow(QtWidgets.QMainWindow):
         #Ending of menubar
 
         self.calculators = QtWidgets.QStackedWidget()
-
-        self.standard_calculator = StandardCalculator()
-        self.scientific_calculator = ScientificCalculator()
-
-
         self.setCentralWidget(self.calculators)
 
         # Menu connections
@@ -111,6 +106,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # Display Standard    
     def show_standard(self):
         self.ClearCurrentFrame()
+        self.standard_calculator = StandardCalculator()
         self.calculators.addWidget(self.standard_calculator)
         self.calculators.setCurrentWidget(self.standard_calculator)
         self.adjustSize()
@@ -119,6 +115,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # Display Scientific
     def show_scientific(self):
         self.ClearCurrentFrame()
+        self.scientific_calculator = ScientificCalculator()
         self.calculators.addWidget(self.scientific_calculator)
         self.calculators.setCurrentWidget(self.scientific_calculator)
         self.adjustSize()

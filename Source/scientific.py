@@ -78,26 +78,44 @@ class ScientificCalculator(QtWidgets.QWidget):
         self.TanInverseAction.triggered.connect(lambda: self.TanInverseFunction())
 
         #Add actions to menu
-        self.TriMenu.addAction(self.SinAction)
-        self.TriMenu.addAction(self.CosAction)
-        self.TriMenu.addAction(self.TanAction)
+        TriActions1 = [self.SinAction, self.CosAction, self.TanAction]
+        for actions in TriActions1:
+            self.TriMenu.addAction(actions)
         self.TriMenu.addSeparator()
-        self.TriMenu.addAction(self.SinInverseAction)
-        self.TriMenu.addAction(self.CosInverseAction)
-        self.TriMenu.addAction(self.TanInverseAction)
+        TriActions2 = [self.SinInverseAction, self.CosInverseAction, self.TanInverseAction]
+        for actionss in TriActions2:
+            self.TriMenu.addAction(actionss)
 
         # Attach menu to button
         self.TriButton.setMenu(self.TriMenu)
 
-
         # Memory Button
         self.MemButton = QtWidgets.QPushButton("Memory")
         self.MemMenu = QtWidgets.QMenu(self.MemButton)
-        self.MemMenu.addAction("MC (Memory Clear)")
-        self.MemMenu.addAction("MR (Memory Recall)")
-        self.MemMenu.addAction("M+ (Memory Add)")
-        self.MemMenu.addAction("M- (Memory Subtract)")
-        self.MemMenu.addAction("MS (Memory Store)")
+        self.MemClrAction = QtGui.QAction("MC (Memory Clear)", self)
+        self.MemClrAction.setShortcut("Ctrl+L")
+        self.MemRecallAction = QtGui.QAction("MR (Memory Recall)", self)
+        self.MemRecallAction.setShortcut("Ctrl+R")
+        self.MemAddAction = QtGui.QAction("M+ (Memory Add)", self)
+        self.MemAddAction.setShortcut("Ctrl+P")
+        self.MemSubAction = QtGui.QAction("M- (Memory Subtract)", self)
+        self.MemSubAction.setShortcut("Ctrl+Q")
+        self.MemStrAction = QtGui.QAction("MS (Memory Store)", self)
+        self.MemStrAction.setShortcut("Ctrl+M")
+
+        #Add actions to menu
+        MemAction = [self.MemClrAction, self.MemRecallAction, self.MemAddAction, self.MemSubAction, self.MemStrAction]
+        for action in MemAction:
+            self.MemMenu.addAction(action)
+
+        #Apply trigger actions to the Memory actions
+        self.MemClrAction.triggered.connect(lambda: self.clear_memory())
+        self.MemRecallAction.triggered.connect(lambda: self.MemoryRecall())
+        self.MemAddAction.triggered.connect(lambda: self.MemoryAdd())
+        self.MemSubAction.triggered.connect(lambda: self.MemorySub())
+        self.MemStrAction.triggered.connect(lambda: self.MemoryStore())
+
+        #Attach menus to this button
         self.MemButton.setMenu(self.MemMenu)
 
         # Add the dropdown buttons into the row
@@ -246,11 +264,12 @@ class ScientificCalculator(QtWidgets.QWidget):
         ClearMemBtn.setIconSize(QtCore.QSize(15, 15))
         ClearMemBtn.setToolTip("Clear All Memory")
         ClearMemBtn.setFixedSize(40, 40)
-        #self.DelBtn.clicked.connect(self.clear_history)
+        ClearMemBtn.clicked.connect(lambda: self.clear_memory())
 
         #Memory Listbox
-        MemList = QtWidgets.QListWidget(self)
-        MemList.setFont(QtGui.QFont("Arial", 11))
+        self.MemList = QtWidgets.QListWidget(self)
+        self.MemList.setFont(QtGui.QFont("Arial", 11))
+        self.MemList.itemDoubleClicked.connect(self.get_Mem_Item)
 
         #Add the widgets to the MemTopRow (Title and the Clear Button)
         MemTopRow.addWidget(self.MemTitle)
@@ -259,7 +278,7 @@ class ScientificCalculator(QtWidgets.QWidget):
 
         #Add the widgets to the Memory Layout
         memoryLayout.addLayout(MemTopRow)
-        memoryLayout.addWidget(MemList)
+        memoryLayout.addWidget(self.MemList)
 
         # Put the TabWidget inside the History panel
         historyPanelLayout = QtWidgets.QVBoxLayout(self.historyPanel)
@@ -275,6 +294,21 @@ class ScientificCalculator(QtWidgets.QWidget):
 
         # Event filter
         QtWidgets.QApplication.instance().installEventFilter(self)
+
+    # Function to show a Error message without needing to repeat the same lines of code
+    def show_error(self):
+        self.CalTxt.setText("Error")
+        self.calTrackerLbl.clear()
+        self.calTrackerLbl.hide()
+
+        self.Num1 = None
+        self.Num2 = None
+        self.Operator = None
+        self.waiting_for_num2 = False
+
+        self.expression = ""
+        self.bracket_count = 0
+        self.using_expression = False
 
     #The function to run an keypress event
     #If the user uses the keyborad to input their calculations
@@ -444,7 +478,6 @@ class ScientificCalculator(QtWidgets.QWidget):
 
                     if last_character == "(":
                         self.bracket_count -= 1
-
                     elif last_character == ")":
                         self.bracket_count += 1
 
@@ -574,36 +607,42 @@ class ScientificCalculator(QtWidgets.QWidget):
             self.UpdateHistoryList()
             return
 
-        #Square Root
+        # Square Root
         if operation == "√x":
             if current_number < 0:
-                self.CalTxt.setText("Error")
+                self.show_error()
                 return
 
-            result = current_number ** 0.5
-            number = self.format_number(current_number)
-            resultText = self.format_number(result)
-            self.calTrackerLbl.setText(f"√({number})")
-            self.calTrackerLbl.show()
-            self.CalTxt.setText(resultText)
-            CalHisList.insert(0, f"√({number}) = {resultText}")
-            self.UpdateHistoryList()
+            try:
+                result = math.sqrt(current_number)
+                numberText = self.format_number(current_number)
+                resultText = self.format_number(result)
+                self.CalTxt.setText(resultText)
+                self.calTrackerLbl.setText(f"√({numberText})")
+                self.calTrackerLbl.show()
+                CalHisList.insert(0, f"√({numberText}) = {resultText}")
+                self.UpdateHistoryList()
+            except (ValueError, OverflowError):
+                self.show_error()
             return
-
-        #Cube Root
+        
+        # Cube Root
         if operation == "³√x":
-            if current_number < 0:
-                self.CalTxt.setText("Error")
-                return
+            try:
+                if current_number < 0:
+                    result = -((-current_number) ** (1 / 3))
+                else:
+                    result = current_number ** (1 / 3)
 
-            result = current_number ** (1/3)
-            number = self.format_number(current_number)
-            resultText = self.format_number(result)
-            self.calTrackerLbl.setText(f"³√({number})")
-            self.calTrackerLbl.show()
-            self.CalTxt.setText(resultText)
-            CalHisList.insert(0, f"³√({number}) = {resultText}")
-            self.UpdateHistoryList()
+                numberText = self.format_number(current_number)
+                resultText = self.format_number(result)
+                self.CalTxt.setText(resultText)
+                self.calTrackerLbl.setText(f"³√({numberText})")
+                self.calTrackerLbl.show()
+                CalHisList.insert(0, f"³√({numberText}) = {resultText}")
+                self.UpdateHistoryList()
+            except (ValueError, OverflowError):
+                self.show_error()
             return
 
         # Pi
@@ -637,36 +676,67 @@ class ScientificCalculator(QtWidgets.QWidget):
 
         #Factorial
         if operation == "n!":
-            number = self.format_number(current_number)
-            result = math.factorial(float(number))
-            self.CalTxt.setText(self.format_number(result))
-            self.calTrackerLbl.setText(f"fact({number})")
-            self.calTrackerLbl.show()
-            CalHisList.insert(0, f"fact({number}) = {self.format_number(result)}")
-            self.UpdateHistoryList()
+            if not current_number.is_integer() or current_number < 0:
+                self.show_error()
+                return
+
+            try:
+                number = int(current_number)
+                result = math.factorial(number)
+                resultText = self.format_number(result)
+                self.CalTxt.setText(resultText)
+                self.calTrackerLbl.setText(f"fact({number})")
+                self.calTrackerLbl.show()
+                CalHisList.insert(0, f"fact({number}) = {resultText}")
+                self.UpdateHistoryList()
+            except (ValueError, OverflowError):
+                self.show_error()
             return
 
        # Modulo / Remainder
         if operation == "Mod":
-            number = self.format_number(current_number)
-            FirstNum = self.format_number(self.Num1)
-            result = math.fmod(int(FirstNum), int(number))
-            self.CalTxt.setText(self.format_number(result))
-            self.calTrackerLbl.setText(f"{FirstNum} MOD {number}")
-            self.calTrackerLbl.show()
-            CalHisList.insert(0, f"{FirstNum} MOD {number} = {self.format_number(result)}")
-            self.UpdateHistoryList()
+            if self.Num1 is None:
+                self.show_error()
+                return
+
+            try:
+                number = current_number
+
+                if number == 0:
+                    self.show_error()
+                    return
+
+                firstNum = self.Num1
+                result = math.fmod(firstNum, number)
+                firstText = self.format_number(firstNum)
+                numberText = self.format_number(number)
+                resultText = self.format_number(result)
+                self.CalTxt.setText(resultText)
+                self.calTrackerLbl.setText(f"{firstText} MOD {numberText}")
+                self.calTrackerLbl.show()
+                CalHisList.insert(0, f"{firstText} MOD {numberText} = {resultText}")
+                self.UpdateHistoryList()
+            except (ValueError, TypeError, ZeroDivisionError, OverflowError):
+                self.show_error()
             return
 
-        #Logomathric (log)
+        # Logarithm
         if operation == "log":
-            number = self.format_number(current_number)
-            result = math.log10(int(number))
-            self.CalTxt.setText(self.format_number(result))
-            self.calTrackerLbl.setText(f"log10({number})")
-            self.calTrackerLbl.show()
-            CalHisList.insert(0, f"log10({number}) = {result}")
-            self.UpdateHistoryList()
+            if current_number <= 0:
+                self.show_error()
+                return
+
+            try:
+                result = math.log10(current_number)
+                numberText = self.format_number(current_number)
+                resultText = self.format_number(result)
+                self.CalTxt.setText(resultText)
+                self.calTrackerLbl.setText(f"log10({numberText})")
+                self.calTrackerLbl.show()
+                CalHisList.insert(0, f"log10({numberText}) = {resultText}")
+                self.UpdateHistoryList()
+            except (ValueError, OverflowError):
+                self.show_error()
             return
 
         # EQUALS
@@ -755,14 +825,11 @@ class ScientificCalculator(QtWidgets.QWidget):
             return
 
         # Don't allow: (+-x / sign
-        if self.expression.endswith(
-            ("(", "+", "−", "×", "÷")):
+        if self.expression.endswith(("(", "+", "−", "×", "÷")):
             return
 
         self.expression += ")"
-
         self.CalTxt.setText(self.expression)
-
         self.bracket_count -= 1
 
     # CALCULATE EXPRESSION
@@ -811,8 +878,7 @@ class ScientificCalculator(QtWidgets.QWidget):
         self.CalTxt.setText(resultText)
         # History
         CalHisList.insert(0,f"{self.expression} = {resultText}")
-
-        self.UpdateHistoryList()
+        self.UpdateHistoryList() #Update the history listbox
 
         # Prepare the variables for the next calculation
         self.expression = resultText
@@ -837,7 +903,18 @@ class ScientificCalculator(QtWidgets.QWidget):
 
     #Format the calculation to make it easier to display on the history panel
     def format_number(self, number):
-        return str(int(number)) if number == int(number) else str(number)
+        try:
+            number = float(number)
+
+            if not math.isfinite(number):
+                return "Error"
+
+            if number.is_integer():
+                return str(int(number))
+
+            return str(number)
+        except (ValueError, TypeError, OverflowError):
+            return "Error"
 
     #To toggle the history panel when the button is clicked
     def toggle_history_panel(self):
@@ -848,10 +925,21 @@ class ScientificCalculator(QtWidgets.QWidget):
         self.historyList.clear()
         self.historyList.addItems(CalHisList)
 
+    #When user adds an value or a calculated value to the Memory List, inform the CalMemList about the new value
+    def UpdateMemList(self):
+        self.MemList.clear()
+        self.MemList.addItems([str(value) for value in CalMemList])
+
     #To clear the history on the Listbox
     def clear_history(self):
         CalHisList.clear()
         self.historyList.clear()
+
+    #To clear the memory from the Listbox
+    #This is also used for the Memory Clear (MC)
+    def clear_memory(self):
+        self.MemList.clear()
+        CalMemList.clear()
 
     #When double clicking an item on the Listbox, Display the item on the label and the Textbox
     def get_cal_item(self, item):
@@ -865,6 +953,12 @@ class ScientificCalculator(QtWidgets.QWidget):
             self.Operator = None
             self.waiting_for_num2 = False
             self.CalTxt.setFocus()
+
+    #When user double clicks on an item on the Listbox, Display that item on the Textbox
+    def get_Mem_Item(self, item):
+        text = item.text()
+        self.CalTxt.setText(text)
+        self.CalTxt.setFocus()
 
     #To copy the selected item to the clipborad
     def copy_history_item(self):
@@ -942,38 +1036,126 @@ class ScientificCalculator(QtWidgets.QWidget):
         CalHisList.insert(0, f"tan({numbertext}) = {resultText}")
 
     def SinInverseFunction(self):
-        value = float(self.CalTxt.text())
-        result = math.asin(math.radians(value))
-        resultText = self.format_number(result)
-        numbertext = self.format_number(value)
+        try:
+            value = float(self.CalTxt.text())
 
-        self.CalTxt.setText(resultText)
-        self.calTrackerLbl.setText(f"sin-1({numbertext})")
-        self.calTrackerLbl.show()
+            if value < -1 or value > 1:
+                self.show_error()
+                return
 
-        CalHisList.insert(0, f"sin-1({numbertext}) = {resultText}")
+            result = math.degrees(math.asin(value))
+            resultText = self.format_number(result)
+            numberText = self.format_number(value)
+            self.CalTxt.setText(resultText)
+            self.calTrackerLbl.setText(f"sin⁻¹({numberText})")
+            self.calTrackerLbl.show()
+            CalHisList.insert(0, f"sin⁻¹({numberText}) = {resultText}")
+            self.UpdateHistoryList()
+        except (ValueError, TypeError, OverflowError):
+            self.show_error()
+
     
     def CosInverseFunction(self):
-        value = float(self.CalTxt.text())
-        result = math.acos(math.radians(value))
-        resultText = self.format_number(result)
-        numbertext = self.format_number(value)
+        try:
+            value = float(self.CalTxt.text())
 
-        self.CalTxt.setText(resultText)
-        self.calTrackerLbl.setText(f"cos-1({numbertext})")
-        self.calTrackerLbl.show()
+            if value < -1 or value > 1:
+                self.show_error()
+                return
 
-        CalHisList.insert(0, f"cos-1({numbertext}) = {resultText}")
+            result = math.degrees(math.acos(value))
+            resultText = self.format_number(result)
+            numberText = self.format_number(value)
+            self.CalTxt.setText(resultText)
+            self.calTrackerLbl.setText(f"cos⁻¹({numberText})")
+            self.calTrackerLbl.show()
+            CalHisList.insert(0, f"cos⁻¹({numberText}) = {resultText}")
+            self.UpdateHistoryList()
+        except (ValueError, TypeError, OverflowError):
+            self.show_error()
+
     
     def TanInverseFunction(self):
-        value = float(self.CalTxt.text())
-        result = math.atan(math.radians(value))
-        resultText = self.format_number(result)
-        numbertext = self.format_number(value)
+        try:
+            value = float(self.CalTxt.text())
+            result = math.degrees(math.atan(value))
+            resultText = self.format_number(result)
+            numberText = self.format_number(value)
+            self.CalTxt.setText(resultText)
+            self.calTrackerLbl.setText(f"tan⁻¹({numberText})")
+            self.calTrackerLbl.show()
+            CalHisList.insert(0, f"tan⁻¹({numberText}) = {resultText}")
+            self.UpdateHistoryList()
+        except (ValueError, TypeError, OverflowError):
+            self.show_error()
 
-        self.CalTxt.setText(resultText)
-        self.calTrackerLbl.setText(f"tan-1({numbertext})")
-        self.calTrackerLbl.show()
+    #The Memory functions
+    # Memory Store
+    def MemoryStore(self):
+        try:
+            value = float(self.CalTxt.text())
 
-        CalHisList.insert(0, f"tan-1({numbertext}) = {resultText}")
+            if not math.isfinite(value):
+                self.show_error()
+                return
+
+            CalMemList.insert(0, value)
+            self.UpdateMemList()
+
+        except (ValueError, TypeError, OverflowError):
+            self.show_error()
+
+
+    # Memory Add
+    def MemoryAdd(self):
+        try:
+            if not CalMemList:
+                CalMemList.insert(0, 0.0)
+
+            memValue = float(CalMemList[0])
+            num = float(self.CalTxt.text())
+
+            if not math.isfinite(num):
+                self.show_error()
+                return
+
+            result = memValue + num
+            CalMemList.insert(0, result)
+            self.UpdateMemList()
+        except (ValueError, TypeError, OverflowError):
+            self.show_error()
+
+
+    # Memory Subtract
+    def MemorySub(self):
+        try:
+            if not CalMemList:
+                CalMemList.insert(0, 0.0)
+
+            memValue = float(CalMemList[0])
+            num = float(self.CalTxt.text())
+
+            if not math.isfinite(num):
+                self.show_error()
+                return
+
+            result = num - memValue
+            CalMemList.insert(0, result)
+            self.UpdateMemList()
+        except (ValueError, TypeError, OverflowError):
+            self.show_error()
+
+
+    # Memory Recall
+    def MemoryRecall(self):
+        if not CalMemList:
+            self.show_error()
+            return
+
+        try:
+            value = float(CalMemList[0])
+            self.CalTxt.setText(self.format_number(value))
+        except (ValueError, TypeError, OverflowError):
+            self.show_error()
+
        
