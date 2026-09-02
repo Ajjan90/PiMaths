@@ -5,11 +5,8 @@ from PySide6.QtGui import QAction
 import qtawesome as qta
 import math
 
-#to store the calculation into this List
-CalHisList = []
-
-#to store the resulted number into a memory
-CalMemList = []
+CalHisList = [] #to store the calculation into this List
+CalMemList = [] #to store the resulted number into a memory
 
 class ScientificCalculator(QtWidgets.QWidget):
     def __init__(self):
@@ -185,11 +182,11 @@ class ScientificCalculator(QtWidgets.QWidget):
         layout.addLayout(topRow)
         layout.addLayout(mainRow)
 
-        # History panel
-        self.historyPanel = QtWidgets.QFrame()
-        self.historyPanel.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
-        self.historyPanel.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
-        self.historyPanel.setMinimumWidth(300)
+        # SidePanel
+        self.SidePanel = QtWidgets.QFrame()
+        self.SidePanel.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.SidePanel.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.SidePanel.setMinimumWidth(300)
 
         # Tab control
         self.tabControl = QtWidgets.QTabWidget()
@@ -270,6 +267,59 @@ class ScientificCalculator(QtWidgets.QWidget):
         self.MemList = QtWidgets.QListWidget(self)
         self.MemList.setFont(QtGui.QFont("Arial", 11))
         self.MemList.itemDoubleClicked.connect(self.get_Mem_Item)
+        self.MemList.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self.MemList.customContextMenuRequested.connect(self.showMemoryContextmenu)
+
+        #Memory Add Action Menu
+        self.AddMemAction = QtGui.QAction("Memory Add", self)
+        self.AddMemAction.setShortcut("Ctrl+P")
+        self.AddMemAction.setShortcutContext(QtCore.Qt.ShortcutContext.WidgetShortcut)
+        self.AddMemAction.triggered.connect(lambda: self.MemBtnAdd())
+        self.MemList.addAction(self.AddMemAction)
+
+        #Memory Subtract Action Menu
+        self.SubMemAction = QtGui.QAction("Memory Subtract", self)
+        self.SubMemAction.setShortcut("Ctrl+M")
+        self.SubMemAction.setShortcutContext(QtCore.Qt.ShortcutContext.WidgetShortcut)
+        self.SubMemAction.triggered.connect(self.MemBtnSub)
+        self.MemList.addAction(self.SubMemAction)
+
+        # Memory Clear Action Menu
+        self.ClearMemAction = QtGui.QAction("Memory Clear", self)
+        self.ClearMemAction.setShortcut("Ctrl+L")
+        self.ClearMemAction.setShortcutContext(QtCore.Qt.ShortcutContext.WidgetShortcut)
+        self.ClearMemAction.triggered.connect(self.MemBtnClear)
+        self.MemList.addAction(self.ClearMemAction)
+
+        #Bottom Buttons layout
+        BottomRow = QtWidgets.QHBoxLayout()
+        BottomRow.alignment()
+
+        #Memory add button
+        self.MemaddBtn = QtWidgets.QPushButton("M+")
+        self.MemaddBtn.setEnabled(False)
+        self.MemaddBtn.setToolTip("Add Memory")
+        self.MemaddBtn.setFixedSize(40, 40)
+        self.MemaddBtn.clicked.connect(lambda: self.MemBtnAdd())
+
+        #Memory subtract button
+        self.MemSubBtn = QtWidgets.QPushButton("M-")
+        self.MemSubBtn.setEnabled(False)
+        self.MemSubBtn.setToolTip("Subtract Memory")
+        self.MemSubBtn.setFixedSize(40, 40)
+        self.MemSubBtn.clicked.connect(lambda: self.MemBtnSub())
+        
+        #Memory clear button
+        self.MemClrBtn = QtWidgets.QPushButton("MC")
+        self.MemClrBtn.setEnabled(False)
+        self.MemClrBtn.setToolTip("CLear/Remove Memory")
+        self.MemClrBtn.setFixedSize(40, 40)
+        self.MemClrBtn.clicked.connect(lambda: self.MemBtnClear())
+
+        BottomRow.addWidget(self.MemaddBtn)
+        BottomRow.addWidget(self.MemSubBtn)
+        BottomRow.addWidget(self.MemClrBtn)
+        self.MemList.itemSelectionChanged.connect(lambda: self.updateBtnState())
 
         #Add the widgets to the MemTopRow (Title and the Clear Button)
         MemTopRow.addWidget(self.MemTitle)
@@ -279,18 +329,19 @@ class ScientificCalculator(QtWidgets.QWidget):
         #Add the widgets to the Memory Layout
         memoryLayout.addLayout(MemTopRow)
         memoryLayout.addWidget(self.MemList)
+        memoryLayout.addLayout(BottomRow)
 
         # Put the TabWidget inside the History panel
-        historyPanelLayout = QtWidgets.QVBoxLayout(self.historyPanel)
+        historyPanelLayout = QtWidgets.QVBoxLayout(self.SidePanel)
         historyPanelLayout.setContentsMargins(0, 0, 0, 0)
         historyPanelLayout.addWidget(self.tabControl)
 
         # Initially hide History panel
-        self.historyPanel.hide()
+        self.SidePanel.hide()
 
         # Add calculator + history panel to main layout
         mainLayout.addLayout(layout, 3)
-        mainLayout.addWidget(self.historyPanel, 1)
+        mainLayout.addWidget(self.SidePanel, 1)
 
         # Event filter
         QtWidgets.QApplication.instance().installEventFilter(self)
@@ -832,7 +883,147 @@ class ScientificCalculator(QtWidgets.QWidget):
         self.CalTxt.setText(self.expression)
         self.bracket_count -= 1
 
-    # CALCULATE EXPRESSION
+    def tokenize_expression(self, expression):
+        tokens = []
+        i = 0
+
+        while i < len(expression):
+            char = expression[i]
+
+            # Ignore spaces
+            if char.isspace():
+                i += 1
+                continue
+
+            # Operators / brackets
+            if char in "+−×÷()":
+                tokens.append(char)
+                i += 1
+                continue
+
+            # Number
+            if char.isdigit() or char == ".":
+                start = i
+                decimal_count = 0
+
+                while i < len(expression) and (
+                    expression[i].isdigit() or expression[i] == "."
+                ):
+                    if expression[i] == ".":
+                        decimal_count += 1
+
+                        if decimal_count > 1:
+                            raise ValueError("Invalid number")
+
+                    i += 1
+
+                number_text = expression[start:i]
+
+                # "." by itself isn't a valid number
+                if number_text == ".":
+                    raise ValueError("Invalid number")
+
+                tokens.append(float(number_text))
+                continue
+
+            # Anything else is invalid
+            raise ValueError("Invalid character")
+
+        return tokens
+    def evaluate_expression(self, expression):
+        tokens = self.tokenize_expression(expression)
+        position = 0
+
+        def current_token():
+            if position < len(tokens):
+                return tokens[position]
+            return None
+
+        def parse_expression():
+            nonlocal position
+
+            result = parse_term()
+
+            while current_token() in ("+", "−"):
+                operator = current_token()
+                position += 1
+
+                right = parse_term()
+
+                if operator == "+":
+                    result += right
+                else:
+                    result -= right
+
+            return result
+
+        def parse_term():
+            nonlocal position
+
+            result = parse_factor()
+
+            while current_token() in ("×", "÷"):
+                operator = current_token()
+                position += 1
+
+                right = parse_factor()
+
+                if operator == "×":
+                    result *= right
+
+                elif operator == "÷":
+                    if right == 0:
+                        raise ZeroDivisionError
+
+                    result /= right
+
+            return result
+
+        def parse_factor():
+            nonlocal position
+
+            token = current_token()
+
+            # Unary plus
+            if token == "+":
+                position += 1
+                return parse_factor()
+
+            # Unary minus
+            if token == "−":
+                position += 1
+                return -parse_factor()
+
+            # Parentheses
+            if token == "(":
+                position += 1
+
+                result = parse_expression()
+
+                if current_token() != ")":
+                    raise ValueError("Missing closing bracket")
+
+                position += 1
+                return result
+
+            # Number
+            if isinstance(token, float):
+                position += 1
+                return token
+
+            raise ValueError("Invalid expression")
+
+        result = parse_expression()
+
+        # There shouldn't be anything left over
+        if position != len(tokens):
+            raise ValueError("Unexpected token")
+
+        if not math.isfinite(result):
+            raise ValueError("Invalid result")
+
+        return result
+
     def calculate_expression(self):
         expression = self.expression
 
@@ -841,25 +1032,9 @@ class ScientificCalculator(QtWidgets.QWidget):
             self.CalTxt.setText("Error")
             return
 
-        # Convert calculator operators to Python
-        python_expression = (expression.replace("×", "*").replace("÷", "/").replace("−", "-"))
-
-        # Safety check
-        allowed_characters = ("0123456789" ".+-*/() ")
-
-        if not all(char in allowed_characters for char in python_expression):
-            self.CalTxt.setText("Error")
-            return
-
-        # Evaluate
-        #There is a line that uses the eval function, which might become a security problem 
-        #So fix that when you finish the others
         try:
-            result = eval(python_expression,{"__builtins__": None},{})
+            result = self.evaluate_expression(expression)
 
-            # Prevent invalid result
-            if not math.isfinite(result):
-                raise ValueError
         except Exception:
             self.CalTxt.setText("Error")
             self.expression = ""
@@ -876,11 +1051,12 @@ class ScientificCalculator(QtWidgets.QWidget):
 
         # Display result
         self.CalTxt.setText(resultText)
-        # History
-        CalHisList.insert(0,f"{self.expression} = {resultText}")
-        self.UpdateHistoryList() #Update the history listbox
 
-        # Prepare the variables for the next calculation
+        # History
+        CalHisList.insert(0, f"{self.expression} = {resultText}")
+        self.UpdateHistoryList()
+
+        # Prepare variables for next calculation
         self.expression = resultText
         self.bracket_count = 0
         self.using_expression = False
@@ -918,7 +1094,7 @@ class ScientificCalculator(QtWidgets.QWidget):
 
     #To toggle the history panel when the button is clicked
     def toggle_history_panel(self):
-        self.historyPanel.setVisible(not self.historyPanel.isVisible())
+        self.SidePanel.setVisible(not self.SidePanel.isVisible())
 
     #When the user performs a calculation, inform the Listbox for the updates CalHisList
     def UpdateHistoryList(self):
@@ -988,6 +1164,22 @@ class ScientificCalculator(QtWidgets.QWidget):
         menu.addAction(self.deleteAction)
         menu.exec(self.historyList.viewport().mapToGlobal(position))
 
+    #To show the contextmenu for the Memory listbox when an item is selected
+    def showMemoryContextmenu(self, position):
+        item = self.MemList.itemAt(position)
+
+        if item is None:
+            return
+
+        self.historyList.setCurrentItem(item)
+
+        menu = QtWidgets.QMenu(self.MemList)
+        menu.addAction(self.AddMemAction)
+        menu.addAction(self.SubMemAction)
+        menu.addAction(self.ClearMemAction)
+        menu.exec(self.MemList.viewport().mapToGlobal(position))
+        pass
+
     def delete_history_item(self, item):
         row = self.historyList.row(item)
 
@@ -1054,7 +1246,6 @@ class ScientificCalculator(QtWidgets.QWidget):
         except (ValueError, TypeError, OverflowError):
             self.show_error()
 
-    
     def CosInverseFunction(self):
         try:
             value = float(self.CalTxt.text())
@@ -1145,7 +1336,6 @@ class ScientificCalculator(QtWidgets.QWidget):
         except (ValueError, TypeError, OverflowError):
             self.show_error()
 
-
     # Memory Recall
     def MemoryRecall(self):
         if not CalMemList:
@@ -1158,4 +1348,54 @@ class ScientificCalculator(QtWidgets.QWidget):
         except (ValueError, TypeError, OverflowError):
             self.show_error()
 
-       
+    # Enable or disable the memory buttons when an item is or isn't selected
+    def updateBtnState(self):
+        hasSelected = bool(self.MemList.selectedItems())
+
+        for btn in (self.MemaddBtn, self.MemSubBtn, self.MemClrBtn):
+            btn.setEnabled(hasSelected)
+
+    #Memory Button clicked logic (similar to the other Memory functions but based on the listbox)
+    #These functions will also be used on the contextmenu for the MemListbox
+    #Memory Add Button Logic
+    def MemBtnAdd(self):
+        try:
+            selected = self.MemList.selectedItems()
+
+            if not selected:
+                return
+            
+            item = float(selected[0].text())
+            num = float(self.CalTxt.text())
+            result = item + num
+            CalMemList.insert(0, result)
+            self.UpdateMemList()
+        except (ValueError, TypeError, OverflowError):
+            self.show_error()
+
+    #Memory Subtract Button Logic
+    def MemBtnSub(self):
+        try:
+            selected = self.MemList.selectedItems()
+
+            if not selected:
+                return
+
+            item = float(selected[0].text())
+            num = float(self.CalTxt.text())
+            result = item - num
+            CalMemList.insert(0, result)
+            self.UpdateMemList()
+        except (ValueError, TypeError, OverflowError):
+            self.show_error()
+
+    #Memory Clear Button Logic
+    def MemBtnClear(self):
+        selected = self.MemList.selectedItems()
+
+        if not selected:
+            return
+
+        row = self.MemList.row(selected[0])
+        CalMemList.pop(row)
+        self.UpdateMemList()
