@@ -5,6 +5,7 @@ import qtawesome as qta
 from Source.standard import StandardCalculator
 from Source.scientific import ScientificCalculator
 from Source.average import AverageCalculator
+from Source.paper import PaperCalculator
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -96,6 +97,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.StnView.triggered.connect(self.show_standard)
         self.SciView.triggered.connect(self.show_scientific)
         self.AveView.triggered.connect(self.show_average)
+        self.PaperView.triggered.connect(self.show_paper)
 
         # Start with Standard
         self.show_standard()
@@ -127,6 +129,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.average_calculator = AverageCalculator()
         self.calculators.addWidget(self.average_calculator)
         self.calculators.setCurrentWidget(self.average_calculator)
+        self.adjustSize()
+
+    def show_paper(self):
+        self.ClearCurrentFrame()
+        self.paper_calculator = PaperCalculator()
+        self.calculators.addWidget(self.paper_calculator)
+        self.calculators.setCurrentWidget(self.paper_calculator)
         self.adjustSize()
 
 
