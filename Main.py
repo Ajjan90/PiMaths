@@ -104,8 +104,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def ClearCurrentFrame(self):
         current = self.calculators.currentWidget()
+
         if current is not None:
             self.calculators.removeWidget(current)
+            current.deleteLater()
+
 
     # Display Standard    
     def show_standard(self):
@@ -131,18 +134,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.calculators.setCurrentWidget(self.average_calculator)
         self.adjustSize()
 
+    # Display Paper Mode
     def show_paper(self):
         self.ClearCurrentFrame()
+
         self.paper_calculator = PaperCalculator()
+
         self.calculators.addWidget(self.paper_calculator)
         self.calculators.setCurrentWidget(self.paper_calculator)
-        self.adjustSize()
 
+        self.paper_calculator.inputBox.setFocus()
+
+        self.adjustSize()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
-
     window = MainWindow()
     window.show()
-
     app.exec()
