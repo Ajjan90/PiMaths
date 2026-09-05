@@ -37,29 +37,29 @@ class MainWindow(QtWidgets.QMainWindow):
         self.PaperView.setIcon(qta.icon("fa5s.file"))
         self.PaperView.setShortcut("Alt+3")
         
-        self.TemView = QtGui.QAction("Temperature", self) #Temperature
-        self.TemView.setShortcut("Alt+4")
-        
-        self.VolView = QtGui.QAction("Volumne", self) #Volumne
-        self.VolView.setShortcut("Alt+5")
-        
         self.AreaView = QtGui.QAction("Area", self) #Area
-        self.AreaView.setShortcut("Alt+6")
-        
-        self.LenView = QtGui.QAction("Length", self) #Length
-        self.LenView.setShortcut("Alt+7")
+        self.AreaView.setShortcut("Alt+4")
+
+        self.CurrView = QtGui.QAction("Currency", self) #Currency
+        self.CurrView.setShortcut("Alt+5")
         
         self.DateView = QtGui.QAction("Date Calculation", self) #Date Calculation
-        self.DateView.setShortcut("Alt+8")
-        
-        self.TimeView = QtGui.QAction("Time", self) #Time
-        self.TimeView.setShortcut("Alt+9")
+        self.DateView.setShortcut("Alt+6")
         
         self.DataView = QtGui.QAction("Data", self) #Data
-        self.DataView.setShortcut("Alt+Shift+1")
+        self.DataView.setShortcut("Alt+7")
         
-        self.CurrView = QtGui.QAction("Currency", self) #Currency
-        self.CurrView.setShortcut("Alt+Shift+2")
+        self.LenView = QtGui.QAction("Length", self) #Length
+        self.LenView.setShortcut("Alt+8")
+
+        self.TemView = QtGui.QAction("Temperature", self) #Temperature
+        self.TemView.setShortcut("Alt+9")
+        
+        self.TimeView = QtGui.QAction("Time", self) #Time
+        self.TimeView.setShortcut("Alt+Shift+1")
+
+        self.VolView = QtGui.QAction("Volumne", self) #Volumne
+        self.VolView.setShortcut("Alt+Shift+2")
 
         #Help Menu dropdown and its submenus
         self.HelpMenu = QtWidgets.QMenu("Help", self)
@@ -79,7 +79,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ViewMenu.addAction(action)
 
         self.ViewMenu.addSeparator()
-        view_actions = [self.TemView,self.VolView, self.AreaView, self.LenView, self.DateView, self.TimeView, self.DataView, self.CurrView]
+        view_actions = [self.AreaView, self.CurrView, self.DateView, self.DataView,  self.LenView, self.TemView, self.TimeView, self.VolView]        
         for action in view_actions:
             self.ViewMenu.addAction(action)
             
