@@ -8,6 +8,8 @@ import re
 
 from Window.helpWin import HelpWindow
 
+CalList = []
+
 class PaperCalculator(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -42,6 +44,10 @@ class PaperCalculator(QtWidgets.QWidget):
         moreClr.setShortcut("Ctrl+Space")
         moreClr.triggered.connect(self.clearListbox)
 
+        moreClrall = QtGui.QAction("Clear all", self.moreMenu)
+        moreClrall.setShortcut("Ctrl+Shift+Space")
+        moreClrall.triggered.connect(self.clearallItems)
+
         # Copy all action
         moreCopy = QtGui.QAction("Copy all", self.moreMenu)
         moreCopy.setShortcut("Ctrl+Shift+C")
@@ -49,6 +55,7 @@ class PaperCalculator(QtWidgets.QWidget):
 
         # Add actions to menu
         self.moreMenu.addAction(moreClr)
+        self.moreMenu.addAction(moreClrall)
         self.moreMenu.addAction(moreCopy)
 
         # Attach menu to button
@@ -73,6 +80,8 @@ class PaperCalculator(QtWidgets.QWidget):
         self.inputBox.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
         self.inputBox.setPlaceholderText("Enter calculation...")
         self.inputBox.returnPressed.connect(self.calculate)
+        self.expressionIndex = 0
+        self.inputBox.installEventFilter(self)
 
         # Enter button
         enterBtn = QtWidgets.QPushButton("=")
@@ -146,6 +155,8 @@ class PaperCalculator(QtWidgets.QWidget):
             # Clear input
             self.inputBox.clear()
             self.inputBox.setFocus()
+
+            CalList.append(f"{expression} = {resultText}")
         except ValueError as error:
             self.showError(str(error))
 
@@ -184,35 +195,52 @@ class PaperCalculator(QtWidgets.QWidget):
         self.listOutput.clear()
         self.inputBox.setFocus()
 
-    # Copy all the item form the Listbox
+    #Clear the paper and the items saved in the CalList List
+    def clearallItems(self):
+        self.clearListbox()
+        CalList.clear()
+
+    # Copy all items from the CalList which has stored the calculations
     def copyAllClip(self):
-        if self.listOutput.count() == 0:
-            return
-
-        lines = []
-
-        # Go through every item
-        for i in range(self.listOutput.count()):
-            item = self.listOutput.item(i)
-            text = item.text().strip()
-
-            if not text:
-                continue
-
-            if i % 2 == 0:
-                # Expression
-                lines.append(text)
-            else:
-                # Result
-                lines.append(f"= {text}")
-
-        clipboardText = "\n".join(lines)
         clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.setText(clipboardText)
+        resultText = "\n".join(CalList)
+        clipboard.setText(resultText)
 
     def showHelpWindow(self):
         self.helpWindow = HelpWindow()
         self.helpWindow.show()
+        
+    #This is a keypress class, when the user uses the up and down arrows it should retrive the previous calculations without needing to retype it again
+    #Bringing a similar functionality from the Terminal
+    def keyPressEvent(self, event):
+        expression = []
+
+        #Split the current saved calculations on the CalList by splitting them based on the = sign 
+        for item in CalList:
+            parts = item.split("=", 1)
+            calculate = parts[0].strip()
+            expression.insert(0, calculate)
+
+        if event.key() == QtCore.Qt.Key.Key_Up:
+            if expression:
+                self.expressionIndex += 1
+
+                # Don't go before the first item
+                if self.expressionIndex < 0:
+                    self.expressionIndex = 0
+
+                self.inputBox.setText(expression[self.expressionIndex])
+        elif event.key() == QtCore.Qt.Key.Key_Down:
+            if expression:
+                self.expressionIndex -= 1
+
+                # Don't go past the last item
+                if self.expressionIndex >= len(expression):
+                    self.expressionIndex = len(expression) - 1
+
+                self.inputBox.setText(expression[self.expressionIndex])
+        else:
+            super().keyPressEvent(event)
 
 #A class that teaches the paper mode calculator what to do and how to calculate an expression, provide error handling messages and more.
 class SafeCalculator:
@@ -253,7 +281,7 @@ class SafeCalculator:
             raise ValueError("Enter a calculation")
 
         #Replace a symbol based on the following instructions 
-        expression = expression.replace("×", "*")
+        expression = expression.replace("x", "*")
         expression = expression.replace("÷", "/")
         expression = expression.replace("^", "**")
         expression = expression.replace("PI", "pi")

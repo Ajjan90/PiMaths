@@ -6,6 +6,7 @@ class HelpWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle("Paper Mode Help")
         self.resize(520, 650)
+        self.setMaximumSize(520, 650)
         self.setMinimumSize(450, 550)
 
         centralWidget = QtWidgets.QWidget()
@@ -74,6 +75,9 @@ class HelpWindow(QtWidgets.QMainWindow):
             ("Multiplication", "4 * 5", "20"),
             ("Division", "10 / 2", "5"),
             ("Power", "2 ** 3", "8"),
+            ("Sin", "sin(45)", "0.70"),
+            ("Cos", "cos(60)", "0.5"),
+            ("Tan", "tan(45)", "1"),
         ]
 
         for name, expression, result in calculations:
@@ -110,7 +114,8 @@ class HelpWindow(QtWidgets.QMainWindow):
 
         paperDescription = QtWidgets.QLabel(
             "Paper Mode keeps your calculations visible "
-            "so you can review your previous work."
+            "so you can review your previous work. \n"            
+            "Use the up arrow and down arrow to get pervious calculations"
         )
 
         paperDescription.setObjectName("cardText")
@@ -146,20 +151,15 @@ class HelpWindow(QtWidgets.QMainWindow):
         shortcuts = [
             ("Enter", "Calculate"),
             ("Ctrl + Space", "Clear paper"),
+            ("Ctrl + Shift + Space", "Clear all"),
             ("Ctrl + Shift + C", "Copy all"),
         ]
 
         for shortcut, action in shortcuts:
-            row = self.createShortcutRow(
-                shortcut,
-                action
-            )
-
+            row = self.createShortcutRow(shortcut,action)
             shortcutLayout.addWidget(row)
 
         contentLayout.addWidget(shortcutCard)
-
-        # Spacer
         contentLayout.addStretch()
 
         # Bottom Button
@@ -403,9 +403,8 @@ class HelpWindow(QtWidgets.QMainWindow):
 
         return row
 
-
 if __name__ == "__main__":
-    app = QtWidgets.QApplication([])
+    app = QtWidgets.QDialog([])
     window = HelpWindow()
     window.show()
     app.exec()
