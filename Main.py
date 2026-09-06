@@ -7,6 +7,9 @@ from Source.scientific import ScientificCalculator
 from Source.average import AverageCalculator
 from Source.paper import PaperCalculator
 
+#Unit Conversions
+from Source.area import AreaCalculator
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -58,12 +61,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.TimeView = QtGui.QAction("Time", self) #Time
         self.TimeView.setShortcut("Alt+Shift+1")
 
-        self.VolView = QtGui.QAction("Volumne", self) #Volumne
+        self.VolView = QtGui.QAction("Volume", self) #Volume
         self.VolView.setShortcut("Alt+Shift+2")
 
         #Help Menu dropdown and its submenus
         self.HelpMenu = QtWidgets.QMenu("Help", self)
-        self.PerMenu = QtGui.QAction("Perfernce", self) #Perfernce/Settings
+        self.PerMenu = QtGui.QAction("Preferences", self) #Preferences/Settings
         self.AboutMenu = QtGui.QAction("About", self) #About
 
         #Edit menu and its menuitems
@@ -98,6 +101,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.SciView.triggered.connect(self.show_scientific)
         self.AveView.triggered.connect(self.show_average)
         self.PaperView.triggered.connect(self.show_paper)
+        self.AreaView.triggered.connect(self.show_Area)
 
         # Start with Standard
         self.show_standard()
@@ -137,15 +141,20 @@ class MainWindow(QtWidgets.QMainWindow):
     # Display Paper Mode
     def show_paper(self):
         self.ClearCurrentFrame()
-
         self.paper_calculator = PaperCalculator()
-
         self.calculators.addWidget(self.paper_calculator)
         self.calculators.setCurrentWidget(self.paper_calculator)
-
         self.paper_calculator.inputBox.setFocus()
-
         self.adjustSize()
+
+    # Display Area Calculator
+    def show_Area(self):
+        self.ClearCurrentFrame()
+        self.area_calculator = AreaCalculator()
+        self.calculators.addWidget(self.area_calculator)
+        self.calculators.setCurrentWidget(self.area_calculator)
+        self.adjustSize()
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
