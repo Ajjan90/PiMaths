@@ -2,17 +2,6 @@ from PySide6 import QtWidgets, QtCore, QtGui
 import qtawesome as qta
 from pint import UnitRegistry
 
-# Length units
-length_measurements = [
-    "Millimeters",
-    "Centimeters",
-    "Meters",
-    "Kilometers",
-    "Inches",
-    "Feet",
-]
-
-
 # Area units
 area_measurements = [
     "Square Millimeters",
@@ -27,9 +16,7 @@ area_measurements = [
     "Hectares",
 ]
 
-
 class AreaCalculator(QtWidgets.QWidget):
-
     def __init__(self):
         super().__init__()
 
@@ -47,7 +34,7 @@ class AreaCalculator(QtWidgets.QWidget):
         TopRow = QtWidgets.QHBoxLayout()
 
         # Fonts
-        inputFont = QtGui.QFont("Arial", 20)
+        inputFont = QtGui.QFont("Arial", 18)
         comboFont = QtGui.QFont("Arial", 13)
         buttonFont = QtGui.QFont("Arial", 15)
 
@@ -107,9 +94,9 @@ class AreaCalculator(QtWidgets.QWidget):
 
         # Swap button
         self.swapButton = QtWidgets.QPushButton()
-        self.swapButton.setFixedSize(45, 45)
+        self.swapButton.setFixedSize(35, 35)
         self.swapButton.setIcon(qta.icon("fa5s.exchange-alt"))
-        self.swapButton.setIconSize(QtCore.QSize(20, 20))
+        self.swapButton.setIconSize(QtCore.QSize(15, 15))
         self.swapButton.setToolTip("Swap units")
         self.swapButton.clicked.connect(self.swapUnits)
 
@@ -144,7 +131,6 @@ class AreaCalculator(QtWidgets.QWidget):
                         button.clicked.connect(lambda _, v=text:self.number_clicked(v))
                     else:
                         button.clicked.connect(lambda _, v=text:self.operation_clicked(v))
-
                 self.buttonGrid.addWidget(button,row,col)
 
         # Hide keypad initially
