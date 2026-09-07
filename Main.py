@@ -41,6 +41,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.PaperView.setShortcut("Alt+3")
         
         self.AreaView = QtGui.QAction("Area", self) #Area
+        self.AreaView.setIcon(qta.icon("mdi.grid"))
         self.AreaView.setShortcut("Alt+4")
 
         self.CurrView = QtGui.QAction("Currency", self) #Currency
