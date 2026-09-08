@@ -1,26 +1,15 @@
-from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6 import QtGui, QtWidgets, QtCore
 import qtawesome as qta
-from pint import UnitRegistry
+import requests
 
-# Area units
-area_measurements = [
-    "Square Millimeters",
-    "Square Centimeters",
-    "Square Meters",
-    "Square Kilometers",
-    "Square Inches",
-    "Square Feet",
-    "Square Yards",
-    "Square Miles",
-    "Acres",
-    "Hectares",
-]
+url = "https://restcountries.com/v3.1/all?fields=name,currencies"
+response = requests.get(url)
+countries = response.json()
 
-class AreaCalculator(QtWidgets.QWidget):
+class CurrencyCalculator(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
-        self.u = UnitRegistry()
         self.converting = False
         self.currentInput = None # Track which input is being edited
 
@@ -37,7 +26,7 @@ class AreaCalculator(QtWidgets.QWidget):
         buttonFont = QtGui.QFont("Arial", 15)
 
         # Title
-        self.Lbl = QtWidgets.QLabel("Area")
+        self.Lbl = QtWidgets.QLabel("Currency")        
         titleFont = QtGui.QFont("Arial", 14)
         titleFont.setBold(True)
         self.Lbl.setFont(titleFont)
@@ -91,23 +80,23 @@ class AreaCalculator(QtWidgets.QWidget):
         self.unitLbl.setFont(QtGui.QFont("Arial", 12))
 
         # Add units
-        for item in area_measurements:
-            self.combo1.addItem(item)
-            self.combo2.addItem(item)
+        #for item in area_measurements:
+        #    self.combo1.addItem(item)
+        #    self.combo2.addItem(item)
 
         # Default units
-        self.combo1.setCurrentText("Square Meters")
-        self.combo2.setCurrentText("Square Feet")
+        #self.combo1.setCurrentText("Square Meters")
+        #self.combo2.setCurrentText("Square Feet")
 
         # Connect conversion signals
-        self.inputbox1.textChanged.connect(self.input1Changed)
-        self.inputbox2.textChanged.connect(self.input2Changed)
-        self.combo1.currentTextChanged.connect(self.unit1Changed)
-        self.combo2.currentTextChanged.connect(self.unit2Changed)
+        #self.inputbox1.textChanged.connect(self.input1Changed)
+        #self.inputbox2.textChanged.connect(self.input2Changed)
+        #self.combo1.currentTextChanged.connect(self.unit1Changed)
+        #self.combo2.currentTextChanged.connect(self.unit2Changed)
 
         # Update the 1-unit comparison label
-        self.combo1.currentTextChanged.connect(self.updateUnitLabel)
-        self.combo2.currentTextChanged.connect(self.updateUnitLabel)
+        #self.combo1.currentTextChanged.connect(self.updateUnitLabel)
+        #self.combo2.currentTextChanged.connect(self.updateUnitLabel)
 
         # Button grid
         self.buttonGridWidget = QtWidgets.QWidget()
@@ -168,10 +157,6 @@ class AreaCalculator(QtWidgets.QWidget):
         MainLayout.addWidget(self.unitLbl)
         MainLayout.addWidget(self.buttonGridWidget)
 
-        # Initial conversion
-        self.convertFirst()
-        self.updateUnitLabel()
-
     # Focus tracking
     def FocusEvent(self, line_edit):
         original_focus_event = line_edit.focusInEvent
@@ -185,117 +170,7 @@ class AreaCalculator(QtWidgets.QWidget):
     def showButtons(self, checked):
         self.buttonGridWidget.setVisible(checked)
         self.adjustSize()
-
-    # Get Pint unit
-    def PintUnit(self, unit_name):
-        units = {
-            "Square Millimeters": self.u.mm ** 2,
-            "Square Centimeters": self.u.cm ** 2,
-            "Square Meters": self.u.m ** 2,
-            "Square Kilometers": self.u.km ** 2,
-            "Square Inches": self.u.inch ** 2,
-            "Square Feet": self.u.ft ** 2,
-            "Square Yards": self.u.yd ** 2,
-            "Square Miles": self.u.mile ** 2,
-            "Acres": self.u.acre,
-            "Hectares": self.u.hectare,
-        }
-
-        return units[unit_name]
-
-    # Input 1 changed
-    def input1Changed(self):
-        if self.converting:
-            return
-
-        self.currentInput = self.inputbox1
-        self.convertFirst()
-
-    # Input 2 changed
-    def input2Changed(self):
-        if self.converting:
-            return
-
-        self.currentInput = self.inputbox2
-        self.convertSecond()
-
-    # Unit 1 changed
-    def unit1Changed(self):
-        if self.converting:
-            return
-
-        # If input 1 is active, convert from it
-        if self.currentInput == self.inputbox1:
-            self.convertFirst()
-        else:
-            self.convertSecond()
-
-    # Unit 2 changed
-    def unit2Changed(self):
-        if self.converting:
-            return
-
-        # If input 2 is active, convert from it
-        if self.currentInput == self.inputbox2:
-            self.convertSecond()
-        else:
-            self.convertFirst()
-
-    def convertFirst(self):
-        if self.converting:
-            return
-
-        self.converting = True
-
-        try:
-            text = self.inputbox1.text().strip()
-
-            if not text:
-                self.inputbox2.setText("")
-                return
-            
-            try:
-                value = float(text)
-            except ValueError:
-                self.inputbox2.setText("")
-                return
-
-            from_unit = self.PintUnit(self.combo1.currentText())
-            to_unit = self.PintUnit(self.combo2.currentText())
-            result = (value * from_unit).to(to_unit)
-            converted = result.magnitude
-            self.inputbox2.setText(self.format_number(converted))
-        finally:
-            self.converting = False
-
-    # Convert input 2 -> input 1
-    def convertSecond(self):
-        if self.converting:
-            return
-
-        self.converting = True
-
-        try:
-            text = self.inputbox2.text().strip()
-
-            if not text:
-                self.inputbox1.setText("")
-                return
-
-            try:
-                value = float(text)
-            except ValueError:
-                self.inputbox1.setText("")
-                return
-
-            from_unit = self.PintUnit(self.combo2.currentText())
-            to_unit = self.PintUnit(self.combo1.currentText())
-            result = (value * from_unit).to(to_unit)
-            converted = result.magnitude
-            self.inputbox1.setText(self.format_number(converted))
-        finally:
-            self.converting = False
-
+    
     # Swap units
     def swapUnits(self):
         # Prevent combo box signals from converting
@@ -409,20 +284,3 @@ class AreaCalculator(QtWidgets.QWidget):
             )
         except Exception:
             self.unitLbl.setText("")
-
-    #Define the unit by the unit symbols on a function
-    def unitDisplayName(self, unit_name):
-        names = {
-            "Square Millimeters": "mm²",
-            "Square Centimeters": "cm²",
-            "Square Meters": "m²",
-            "Square Kilometers": "km²",
-            "Square Inches": "in²",
-            "Square Feet": "ft²",
-            "Square Yards": "yd²",
-            "Square Miles": "mi²",
-            "Acres": "acres",
-            "Hectares": "hectares",
-        }
-
-        return names[unit_name]

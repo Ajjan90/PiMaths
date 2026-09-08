@@ -9,6 +9,7 @@ from Source.paper import PaperCalculator
 
 #Unit Conversions
 from Source.area import AreaCalculator
+from Source.currency import CurrencyCalculator
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -45,6 +46,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.AreaView.setShortcut("Alt+4")
 
         self.CurrView = QtGui.QAction("Currency", self) #Currency
+        self.CurrView.setIcon(qta.icon("fa5s.money-bill"))
         self.CurrView.setShortcut("Alt+5")
         
         self.DateView = QtGui.QAction("Date Calculation", self) #Date Calculation
@@ -115,6 +117,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.AveView.triggered.connect(self.show_average)
         self.PaperView.triggered.connect(self.show_paper)
         self.AreaView.triggered.connect(self.show_Area)
+        self.CurrView.triggered.connect(self.show_Curren)
 
         # Start with Standard
         self.show_standard()
@@ -166,6 +169,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.area_calculator = AreaCalculator()
         self.calculators.addWidget(self.area_calculator)
         self.calculators.setCurrentWidget(self.area_calculator)
+        self.adjustSize()
+
+    # Display Currency Calculator
+    def show_Curren(self):
+        self.ClearCurrentFrame()
+        self.curren_calculator = CurrencyCalculator()
+        self.calculators.addWidget(self.curren_calculator)
+        self.calculators.setCurrentWidget(self.curren_calculator)
         self.adjustSize()
 
 
