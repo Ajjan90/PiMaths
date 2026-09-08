@@ -73,6 +73,10 @@ class AreaCalculator(QtWidgets.QWidget):
         self.combo2.setFont(comboFont)
         self.combo2.setMinimumHeight(40)
 
+        # Label to display what 1 unit is to the other unit
+        self.unitLbl = QtWidgets.QLabel()
+        self.unitLbl.setFont(QtGui.QFont("Arial", 12))
+
         # Add units
         for item in area_measurements:
             self.combo1.addItem(item)
@@ -82,23 +86,26 @@ class AreaCalculator(QtWidgets.QWidget):
         self.combo1.setCurrentText("Square Meters")
         self.combo2.setCurrentText("Square Feet")
 
-        self.currentInput = self.inputbox1
-        self.inputbox1.focusInEvent = (self.FocusEvent(self.inputbox1))
-        self.inputbox2.focusInEvent = (self.FocusEvent(self.inputbox2))
-
         # Connect conversion signals
         self.inputbox1.textChanged.connect(self.input1Changed)
         self.inputbox2.textChanged.connect(self.input2Changed)
         self.combo1.currentTextChanged.connect(self.unit1Changed)
         self.combo2.currentTextChanged.connect(self.unit2Changed)
 
+        # Update the 1-unit comparison label
+        self.combo1.currentTextChanged.connect(self.updateUnitLabel)
+        self.combo2.currentTextChanged.connect(self.updateUnitLabel)
+
         # Swap button
         self.swapButton = QtWidgets.QPushButton()
         self.swapButton.setFixedSize(35, 35)
         self.swapButton.setIcon(qta.icon("fa5s.exchange-alt"))
         self.swapButton.setIconSize(QtCore.QSize(15, 15))
-        self.swapButton.setToolTip("Swap units")
+        self.swapButton.setToolTip("Swap units (Ctrl+U)")
         self.swapButton.clicked.connect(self.swapUnits)
+        #Implement the keyborad shortcut for the swapButton
+        self.swapShtcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+U"), self)
+        self.swapShtcut.activated.connect(self.swapUnits)
 
         # Button grid
         self.buttonGridWidget = QtWidgets.QWidget()
@@ -156,10 +163,12 @@ class AreaCalculator(QtWidgets.QWidget):
         MainLayout.addLayout(SwapLayout)
         MainLayout.addWidget(self.inputbox2)
         MainLayout.addWidget(self.combo2)
+        MainLayout.addWidget(self.unitLbl)
         MainLayout.addWidget(self.buttonGridWidget)
 
         # Initial conversion
         self.convertFirst()
+        self.updateUnitLabel()
 
     # Focus tracking
     def FocusEvent(self, line_edit):
@@ -382,3 +391,36 @@ class AreaCalculator(QtWidgets.QWidget):
         # Clear entry
         elif value == "CE":
             line_edit.setText("0")
+
+    #Update the unitLbl when the user changes unit measurements
+    def updateUnitLabel(self):
+        try:
+            from_unit = self.PintUnit(self.combo1.currentText())
+            to_unit = self.PintUnit(self.combo2.currentText())
+
+            result = (1 * from_unit).to(to_unit)
+
+            converted = self.format_number(result.magnitude)
+
+            self.unitLbl.setText(
+                f"1 {self.unitDisplayName(self.combo1.currentText())} = "f"{converted} {self.unitDisplayName(self.combo2.currentText())}"
+            )
+        except Exception:
+            self.unitLbl.setText("")
+
+    #Define the unit by the unit symbols on a function
+    def unitDisplayName(self, unit_name):
+        names = {
+            "Square Millimeters": "mm²",
+            "Square Centimeters": "cm²",
+            "Square Meters": "m²",
+            "Square Kilometers": "km²",
+            "Square Inches": "in²",
+            "Square Feet": "ft²",
+            "Square Yards": "yd²",
+            "Square Miles": "mi²",
+            "Acres": "acres",
+            "Hectares": "hectares",
+        }
+
+        return names[unit_name]
