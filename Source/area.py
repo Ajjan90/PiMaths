@@ -45,7 +45,11 @@ class AreaCalculator(QtWidgets.QWidget):
         self.Lbl.setFont(titleFont)
 
         self.toggleBtn = QtWidgets.QCheckBox("Show buttons")
+        self.toggleBtn.setToolTip("Show buttons (Ctrl+I)")
         self.toggleBtn.toggled.connect(self.showButtons)
+        # Create a keyborad shortcut for this action
+        self.toggleShrtcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+I"), self)
+        self.toggleShrtcut.activated.connect(self.toggleBtn.toggle)
 
         validator = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression(r"\d*\.?\d*"))
 
@@ -60,6 +64,17 @@ class AreaCalculator(QtWidgets.QWidget):
         self.combo1 = QtWidgets.QComboBox()
         self.combo1.setFont(comboFont)
         self.combo1.setMinimumHeight(40)
+
+        #Swap button
+        self.swapButton = QtWidgets.QPushButton()
+        self.swapButton.setFixedSize(35, 35)
+        self.swapButton.setIcon(qta.icon("fa5s.exchange-alt"))
+        self.swapButton.setIconSize(QtCore.QSize(15, 15))
+        self.swapButton.setToolTip("Swap units (Ctrl+U)")
+        self.swapButton.clicked.connect(self.swapUnits)
+        #Implement the keyborad shortcut for the swapButton
+        self.swapShtcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+U"), self)
+        self.swapShtcut.activated.connect(self.swapUnits)
 
         # Second input
         self.inputbox2 = QtWidgets.QLineEdit()
@@ -95,17 +110,6 @@ class AreaCalculator(QtWidgets.QWidget):
         # Update the 1-unit comparison label
         self.combo1.currentTextChanged.connect(self.updateUnitLabel)
         self.combo2.currentTextChanged.connect(self.updateUnitLabel)
-
-        # Swap button
-        self.swapButton = QtWidgets.QPushButton()
-        self.swapButton.setFixedSize(35, 35)
-        self.swapButton.setIcon(qta.icon("fa5s.exchange-alt"))
-        self.swapButton.setIconSize(QtCore.QSize(15, 15))
-        self.swapButton.setToolTip("Swap units (Ctrl+U)")
-        self.swapButton.clicked.connect(self.swapUnits)
-        #Implement the keyborad shortcut for the swapButton
-        self.swapShtcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+U"), self)
-        self.swapShtcut.activated.connect(self.swapUnits)
 
         # Button grid
         self.buttonGridWidget = QtWidgets.QWidget()

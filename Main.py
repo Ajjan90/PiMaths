@@ -52,18 +52,30 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.DataView = QtGui.QAction("Data", self) #Data
         self.DataView.setShortcut("Alt+7")
+
+        self.EneView = QtGui.QAction("Energy", self) #Energy
+        self.EneView.setShortcut("Alt+8")
         
         self.LenView = QtGui.QAction("Length", self) #Length
-        self.LenView.setShortcut("Alt+8")
+        self.LenView.setShortcut("Alt+9")
+
+        self.preView = QtGui.QAction("Pressure", self) #Pressure
+        self.preView.setShortcut("Alt+Shift+1")
+
+        self.powView = QtGui.QAction("Power", self) #Power
+        self.powView.setShortcut("Alt+Shift+2")
+
+        self.speedView = QtGui.QAction("Speed", self) #Speed
+        self.speedView.setShortcut("Alt+Shift+3")
 
         self.TemView = QtGui.QAction("Temperature", self) #Temperature
-        self.TemView.setShortcut("Alt+9")
+        self.TemView.setShortcut("Alt+Shift+4")
         
         self.TimeView = QtGui.QAction("Time", self) #Time
-        self.TimeView.setShortcut("Alt+Shift+1")
+        self.TimeView.setShortcut("Alt+Shift+5")
 
         self.VolView = QtGui.QAction("Volume", self) #Volume
-        self.VolView.setShortcut("Alt+Shift+2")
+        self.VolView.setShortcut("Alt+Shift+6")
 
         #Help Menu dropdown and its submenus
         self.HelpMenu = QtWidgets.QMenu("Help", self)
@@ -83,7 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ViewMenu.addAction(action)
 
         self.ViewMenu.addSeparator()
-        view_actions = [self.AreaView, self.CurrView, self.DateView, self.DataView,  self.LenView, self.TemView, self.TimeView, self.VolView]        
+        view_actions = [self.AreaView, self.CurrView, self.DateView, self.DataView, self.EneView, self.LenView, self.preView, self.powView, self.speedView, self.TemView, self.TimeView, self.VolView]        
         for action in view_actions:
             self.ViewMenu.addAction(action)
             
