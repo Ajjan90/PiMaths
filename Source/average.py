@@ -8,6 +8,8 @@ class AverageCalculator(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
+        self.currentInput = None # Track which input is being edited
+
         self.Num1 = None
         self.Operator = None
         self.Num2 = None

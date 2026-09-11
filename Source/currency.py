@@ -62,6 +62,7 @@ class CurrencyCalculator(QtWidgets.QWidget):
         self.combo1.setMinimumHeight(40)
         self.combo1.currentTextChanged.connect(lambda text: self.getCurrency(text, "from"))
         self.combo1.currentTextChanged.connect(self.convertCurrencies)
+        
         #Swap button
         self.swapButton = QtWidgets.QPushButton()
         self.swapButton.setFixedSize(35, 35)
