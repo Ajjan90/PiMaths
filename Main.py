@@ -11,12 +11,15 @@ from Source.paper import PaperCalculator
 from Source.area import AreaCalculator
 from Source.currency import CurrencyCalculator
 
+appName = "Calculator"
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.resize(420, 450)
-        self.setWindowTitle("Calculator")
+        self.setWindowTitle(appName)
+        self.setWindowIcon(QtGui.QIcon("PiMaths1.ico"))
 
         #The MenuBar
         #The starting of the menubar
@@ -183,5 +186,6 @@ class MainWindow(QtWidgets.QMainWindow):
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
     window = MainWindow()
+    app.setApplicationName(appName)
     window.show()
     app.exec()

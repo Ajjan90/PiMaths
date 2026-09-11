@@ -1,10 +1,9 @@
 from PySide6 import QtGui, QtWidgets, QtCore
 import qtawesome as qta
 import requests
+from countryinfo import all_countries
 
-url = "https://restcountries.com/v3.1/all?fields=name,currencies"
-response = requests.get(url)
-countries = response.json()
+countries = all_countries()
 
 class CurrencyCalculator(QtWidgets.QWidget):
     def __init__(self):
@@ -12,6 +11,10 @@ class CurrencyCalculator(QtWidgets.QWidget):
 
         self.converting = False
         self.currentInput = None # Track which input is being edited
+        
+        #To and From variables
+        self.fromCurrency = ""
+        self.toCurrency = ""
 
         self.setMinimumWidth(380)
 
@@ -38,6 +41,9 @@ class CurrencyCalculator(QtWidgets.QWidget):
         self.toggleShrtcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+I"), self)
         self.toggleShrtcut.activated.connect(self.toggleBtn.toggle)
 
+        self.updateBtn = QtWidgets.QPushButton("Update")
+        self.updateBtn.setToolTip("Update currency rates")
+
         validator = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression(r"\d*\.?\d*"))
 
         # First input
@@ -46,12 +52,16 @@ class CurrencyCalculator(QtWidgets.QWidget):
         self.inputbox1.setFont(inputFont)
         self.inputbox1.setValidator(validator)
         self.inputbox1.setText("1")
+        self.inputbox1.textChanged.connect(self.convertCurrencies)
+        self.inputbox1.textChanged.connect(self.setInput)
+        self.inputbox1.focusInEvent = self.createFocusHandler(self.inputbox1, self.inputbox1.focusInEvent)
 
         # First combo
         self.combo1 = QtWidgets.QComboBox()
         self.combo1.setFont(comboFont)
         self.combo1.setMinimumHeight(40)
-
+        self.combo1.currentTextChanged.connect(lambda text: self.getCurrency(text, "from"))
+        self.combo1.currentTextChanged.connect(self.convertCurrencies)
         #Swap button
         self.swapButton = QtWidgets.QPushButton()
         self.swapButton.setFixedSize(35, 35)
@@ -69,30 +79,35 @@ class CurrencyCalculator(QtWidgets.QWidget):
         self.inputbox2.setFont(inputFont)
         self.inputbox2.setValidator(validator)
         self.inputbox2.setText("0")
+        self.inputbox2.focusInEvent = self.createFocusHandler(self.inputbox2, self.inputbox2.focusInEvent)
 
         # Second combo
         self.combo2 = QtWidgets.QComboBox()
         self.combo2.setFont(comboFont)
         self.combo2.setMinimumHeight(40)
+        self.combo2.currentTextChanged.connect(lambda text: self.getCurrency(text, "to"))
+        self.combo2.currentTextChanged.connect(self.convertCurrencies)
 
+        for country in countries:
+            currencies = country.currencies()
+
+            if currencies:
+                formatComboItem = f"{country.name()} ({currencies[0]})"
+
+                self.combo1.addItem(formatComboItem)
+                self.combo2.addItem(formatComboItem)
+        
         # Label to display what 1 unit is to the other unit
         self.unitLbl = QtWidgets.QLabel()
         self.unitLbl.setFont(QtGui.QFont("Arial", 12))
 
-        # Add units
-        #for item in area_measurements:
-        #    self.combo1.addItem(item)
-        #    self.combo2.addItem(item)
+        self.combo1.currentTextChanged.connect(self.updateUnitLabel)
+        self.combo2.currentTextChanged.connect(self.updateUnitLabel)
+
 
         # Default units
         #self.combo1.setCurrentText("Square Meters")
         #self.combo2.setCurrentText("Square Feet")
-
-        # Connect conversion signals
-        #self.inputbox1.textChanged.connect(self.input1Changed)
-        #self.inputbox2.textChanged.connect(self.input2Changed)
-        #self.combo1.currentTextChanged.connect(self.unit1Changed)
-        #self.combo2.currentTextChanged.connect(self.unit2Changed)
 
         # Update the 1-unit comparison label
         #self.combo1.currentTextChanged.connect(self.updateUnitLabel)
@@ -138,6 +153,7 @@ class CurrencyCalculator(QtWidgets.QWidget):
         TopRow.addWidget(self.Lbl)
         TopRow.addStretch()
         TopRow.addWidget(self.toggleBtn)
+        TopRow.addWidget(self.updateBtn)
 
         MainLayout.addLayout(TopRow)
 
@@ -157,14 +173,70 @@ class CurrencyCalculator(QtWidgets.QWidget):
         MainLayout.addWidget(self.unitLbl)
         MainLayout.addWidget(self.buttonGridWidget)
 
-    # Focus tracking
-    def FocusEvent(self, line_edit):
-        original_focus_event = line_edit.focusInEvent
+        QtWidgets.QApplication.instance().installEventFilter(self)
 
-        def focus_event(event):
-            self.currentInput = line_edit
-            original_focus_event(event)
-        return focus_event
+        if self.combo1.count() > 0:
+            self.getCurrency(self.combo1.currentText(), "from")
+
+        if self.combo2.count() > 0:
+            self.getCurrency(self.combo2.currentText(), "to")
+
+        QtCore.QTimer.singleShot(0, self.convertCurrencies)
+
+    # Get the countries currency title/short form
+    def getCurrency(self, text, comboTag):
+        currency = text.split("(")[1].replace(")", "")
+
+        if comboTag == "from":
+            self.fromCurrency = currency
+        elif comboTag == "to":
+            self.toCurrency = currency
+
+        #print("From:", self.fromCurrency)
+        #print("To:", self.toCurrency)
+    
+    def convertCurrencies(self):
+        if self.converting:
+            return
+
+        if not self.fromCurrency or not self.toCurrency:
+            return
+
+        text = self.inputbox1.text()
+
+        if not text:
+            amount = 0
+        else:
+            try:
+                amount = float(text)
+            except ValueError:
+                return
+
+        if self.fromCurrency == self.toCurrency:
+            self.inputbox2.setText(self.format_number(amount))
+            return
+
+        url = f"https://api.frankfurter.dev/v2/rate/{self.fromCurrency}/{self.toCurrency}"
+
+        try:
+            response = requests.get(url, timeout=5)
+            response.raise_for_status()
+            data = response.json()
+            rate = data["rate"]
+            convertedAmount = amount * rate
+            self.inputbox2.setText(f"{convertedAmount:.2f}")
+        except requests.RequestException as error:
+            print("API error:", error)
+        except (KeyError, TypeError, ValueError) as error:
+            print("Conversion error:", error)
+
+    # Focus tracking
+    def createFocusHandler(self, lineEdit, originalFocusEvent):
+        def focusEvent(event):
+            self.currentInput = lineEdit
+            originalFocusEvent(event)
+
+        return focusEvent
 
     # Show the buttongrid
     def showButtons(self, checked):
@@ -173,19 +245,17 @@ class CurrencyCalculator(QtWidgets.QWidget):
     
     # Swap units
     def swapUnits(self):
-        # Prevent combo box signals from converting
+        if self.converting:
+            return
+
         self.converting = True
 
         try:
-            # Save current units
             unit1 = self.combo1.currentText()
             unit2 = self.combo2.currentText()
-
-            # Save current values
             value1 = self.inputbox1.text()
             value2 = self.inputbox2.text()
 
-            # Swap units
             index1 = self.combo1.findText(unit2)
             index2 = self.combo2.findText(unit1)
 
@@ -195,19 +265,54 @@ class CurrencyCalculator(QtWidgets.QWidget):
             if index2 >= 0:
                 self.combo2.setCurrentIndex(index2)
 
-            # Swap values
             self.inputbox1.setText(value2)
             self.inputbox2.setText(value1)
+
         finally:
             self.converting = False
 
-        # Keep the field that was being edited active
+        self.getCurrency(self.combo1.currentText(), "from")
+        self.getCurrency(self.combo2.currentText(), "to")
+
         if self.currentInput == self.inputbox1:
             self.inputbox1.setFocus()
-            self.convertFirst()
         else:
             self.inputbox2.setFocus()
-            self.convertSecond()
+
+        self.convertCurrencies()
+
+    #The function to run an keypress event
+    #If the user uses the keyborad to input their calculations
+    def eventFilter(self, obj, event):
+        if event.type() != QtCore.QEvent.Type.KeyPress:
+            return super().eventFilter(obj, event)
+
+        key = event.key()
+        text = event.text()
+        modifiers = event.modifiers()
+
+        if modifiers & (QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.AltModifier):
+            return super().eventFilter(obj, event)
+
+        if isinstance(obj, QtWidgets.QComboBox):
+            return super().eventFilter(obj, event)
+
+        if text.isdigit():
+            self.number_clicked(text)
+            self.currentInput.setFocus()
+            return True
+
+        if key == QtCore.Qt.Key.Key_Backspace:
+            self.operation_clicked("backspace")
+            self.currentInput.setFocus()
+            return True
+
+        if key == QtCore.Qt.Key.Key_Escape:
+            self.operation_clicked("CE")
+            self.currentInput.setFocus()
+            return True
+
+        return super().eventFilter(obj, event)
 
     # Number formatting
     def format_number(self, value):
@@ -249,38 +354,69 @@ class CurrencyCalculator(QtWidgets.QWidget):
 
     # Calculator operations
     def operation_clicked(self, value):
-        line_edit = self.currentInput
+        lineEdit = self.currentInput
 
-        if line_edit is None:
-            line_edit = self.inputbox1
-            self.currentInput = line_edit
+        if lineEdit is None:
+            lineEdit = self.inputbox1
+            self.currentInput = lineEdit
 
-        # Backspace
         if value == "backspace":
-            current = line_edit.text()
-            if len(current) <= 1:
-                line_edit.setText("0")
-            else:
-                line_edit.backspace()
+            current = lineEdit.text()
 
-                if line_edit.text() == "":
-                    line_edit.setText("0")
-        # Clear entry
-        elif value == "CE":
-            line_edit.setText("0")
+            if current in ("", "0"):
+                lineEdit.setText("0")
+                return
+
+            lineEdit.backspace()
+
+            if lineEdit.text() == "":
+                lineEdit.setText("0")
+
+            return
+
+        if value == "CE":
+            lineEdit.setText("0")
+            return
 
     #Update the unitLbl when the user changes unit measurements
     def updateUnitLabel(self):
+        if not self.fromCurrency or not self.toCurrency:
+            self.unitLbl.clear()
+            return
+
+        if self.fromCurrency == self.toCurrency:
+            self.unitLbl.setText(f"1 {self.fromCurrency} = 1 {self.toCurrency}")
+            return
+
+        url = f"https://api.frankfurter.dev/v2/rate/{self.fromCurrency}/{self.toCurrency}"
+
         try:
-            from_unit = self.PintUnit(self.combo1.currentText())
-            to_unit = self.PintUnit(self.combo2.currentText())
+            response = requests.get(url, timeout=5)
+            response.raise_for_status()
 
-            result = (1 * from_unit).to(to_unit)
+            data = response.json()
+            rate = data["rate"]
 
-            converted = self.format_number(result.magnitude)
+            self.unitLbl.setText(f"1 {self.fromCurrency} = {rate:.4f} {self.toCurrency}")
 
-            self.unitLbl.setText(
-                f"1 {self.unitDisplayName(self.combo1.currentText())} = "f"{converted} {self.unitDisplayName(self.combo2.currentText())}"
-            )
-        except Exception:
-            self.unitLbl.setText("")
+        except requests.RequestException as error:
+            print("API error:", error)
+            self.unitLbl.clear()
+
+        except (KeyError, TypeError, ValueError) as error:
+            print("Rate error:", error)
+            self.unitLbl.clear()
+
+    def setInput(self, text):
+        if self.converting:
+            return
+
+        if text == "":
+            self.converting = True
+            self.inputbox1.setText("0")
+            self.inputbox1.setCursorPosition(1)
+            self.converting = False
+            self.convertCurrencies()
+            return
+
+        self.convertCurrencies()
