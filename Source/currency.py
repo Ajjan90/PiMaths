@@ -1,7 +1,9 @@
 from PySide6 import QtGui, QtWidgets, QtCore
+from PySide6.QtWidgets import QMessageBox
 import qtawesome as qta
 import requests
 from countryinfo import all_countries
+import socket
 
 countries = all_countries()
 
@@ -10,9 +12,13 @@ class CurrencyCalculator(QtWidgets.QWidget):
         super().__init__()
 
         self.converting = False
-        self.currentInput = None # Track which input is being edited
-        
-        #To and From variables
+        self.currentInput = None  # Track which input is being edited
+
+        # Network information
+        self.networkWarningShown = False
+        self.networkStatus = False
+
+        # To and From variables
         self.fromCurrency = ""
         self.toCurrency = ""
 
@@ -29,7 +35,7 @@ class CurrencyCalculator(QtWidgets.QWidget):
         buttonFont = QtGui.QFont("Arial", 15)
 
         # Title
-        self.Lbl = QtWidgets.QLabel("Currency")        
+        self.Lbl = QtWidgets.QLabel("Currency")
         titleFont = QtGui.QFont("Arial", 14)
         titleFont.setBold(True)
         self.Lbl.setFont(titleFont)
@@ -37,12 +43,14 @@ class CurrencyCalculator(QtWidgets.QWidget):
         self.toggleBtn = QtWidgets.QCheckBox("Show buttons")
         self.toggleBtn.setToolTip("Show buttons (Ctrl+I)")
         self.toggleBtn.toggled.connect(self.showButtons)
-        # Create a keyborad shortcut for this action
+
+        # Keyboard shortcut
         self.toggleShrtcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+I"), self)
         self.toggleShrtcut.activated.connect(self.toggleBtn.toggle)
 
-        self.updateBtn = QtWidgets.QPushButton("Update")
-        self.updateBtn.setToolTip("Update currency rates")
+        self.infoBtn = QtWidgets.QPushButton()
+        self.infoBtn.setIcon(qta.icon("fa6s.info"))
+        self.updateNetworkTooltip()
 
         validator = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression(r"\d*\.?\d*"))
 
@@ -52,7 +60,7 @@ class CurrencyCalculator(QtWidgets.QWidget):
         self.inputbox1.setFont(inputFont)
         self.inputbox1.setValidator(validator)
         self.inputbox1.setText("1")
-        self.inputbox1.textChanged.connect(self.convertCurrencies)
+        self.inputbox1.setEnabled(False)
         self.inputbox1.textChanged.connect(self.setInput)
         self.inputbox1.focusInEvent = self.createFocusHandler(self.inputbox1, self.inputbox1.focusInEvent)
 
@@ -60,17 +68,20 @@ class CurrencyCalculator(QtWidgets.QWidget):
         self.combo1 = QtWidgets.QComboBox()
         self.combo1.setFont(comboFont)
         self.combo1.setMinimumHeight(40)
+        self.combo1.setEnabled(False)
         self.combo1.currentTextChanged.connect(lambda text: self.getCurrency(text, "from"))
         self.combo1.currentTextChanged.connect(self.convertCurrencies)
-        
-        #Swap button
+
+        # Swap button
         self.swapButton = QtWidgets.QPushButton()
         self.swapButton.setFixedSize(35, 35)
         self.swapButton.setIcon(qta.icon("fa5s.exchange-alt"))
         self.swapButton.setIconSize(QtCore.QSize(15, 15))
         self.swapButton.setToolTip("Swap units (Ctrl+U)")
+        self.swapButton.setEnabled(False)
         self.swapButton.clicked.connect(self.swapUnits)
-        #Implement the keyborad shortcut for the swapButton
+
+        # Keyboard shortcut
         self.swapShtcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+U"), self)
         self.swapShtcut.activated.connect(self.swapUnits)
 
@@ -80,39 +91,31 @@ class CurrencyCalculator(QtWidgets.QWidget):
         self.inputbox2.setFont(inputFont)
         self.inputbox2.setValidator(validator)
         self.inputbox2.setText("0")
+        self.inputbox2.setEnabled(False)
         self.inputbox2.focusInEvent = self.createFocusHandler(self.inputbox2, self.inputbox2.focusInEvent)
 
         # Second combo
         self.combo2 = QtWidgets.QComboBox()
         self.combo2.setFont(comboFont)
         self.combo2.setMinimumHeight(40)
+        self.combo2.setEnabled(False)
         self.combo2.currentTextChanged.connect(lambda text: self.getCurrency(text, "to"))
         self.combo2.currentTextChanged.connect(self.convertCurrencies)
 
         for country in countries:
             currencies = country.currencies()
-
             if currencies:
                 formatComboItem = f"{country.name()} ({currencies[0]})"
-
                 self.combo1.addItem(formatComboItem)
                 self.combo2.addItem(formatComboItem)
-        
-        # Label to display what 1 unit is to the other unit
+
+        # Display the current exchange rate
         self.unitLbl = QtWidgets.QLabel()
         self.unitLbl.setFont(QtGui.QFont("Arial", 12))
-
+        self.unitLbl.setStyleSheet("color: gray;")
+        self.updateUnitLabel()
         self.combo1.currentTextChanged.connect(self.updateUnitLabel)
         self.combo2.currentTextChanged.connect(self.updateUnitLabel)
-
-
-        # Default units
-        #self.combo1.setCurrentText("Square Meters")
-        #self.combo2.setCurrentText("Square Feet")
-
-        # Update the 1-unit comparison label
-        #self.combo1.currentTextChanged.connect(self.updateUnitLabel)
-        #self.combo2.currentTextChanged.connect(self.updateUnitLabel)
 
         # Button grid
         self.buttonGridWidget = QtWidgets.QWidget()
@@ -120,13 +123,7 @@ class CurrencyCalculator(QtWidgets.QWidget):
         self.buttonGrid.setContentsMargins(0, 10, 0, 0)
         self.buttonGrid.setSpacing(5)
 
-        buttons = [
-            ["CE", "backspace"],
-            ["7", "8", "9"],
-            ["4", "5", "6"],
-            ["1", "2", "3"],
-            [".", "0"],
-        ]
+        buttons = [["CE", "backspace"], ["7", "8", "9"], ["4", "5", "6"], ["1", "2", "3"], [".", "0"]]
 
         for row, buttonRow in enumerate(buttons):
             for col, text in enumerate(buttonRow):
@@ -134,36 +131,32 @@ class CurrencyCalculator(QtWidgets.QWidget):
                 button.setFont(buttonFont)
                 button.setFixedHeight(50)
 
-                # Backspace
                 if text == "backspace":
                     button.setIcon(qta.icon("fa5s.backspace"))
                     button.setIconSize(QtCore.QSize(18, 18))
-                    button.clicked.connect(lambda _, v=text:self.operation_clicked(v))
+                    button.clicked.connect(lambda _, v=text: self.operation_clicked(v))
                 else:
                     button.setText(text)
                     if text.isdigit() or text == ".":
-                        button.clicked.connect(lambda _, v=text:self.number_clicked(v))
+                        button.clicked.connect(lambda _, v=text: self.number_clicked(v))
                     else:
-                        button.clicked.connect(lambda _, v=text:self.operation_clicked(v))
-                self.buttonGrid.addWidget(button,row,col)
+                        button.clicked.connect(lambda _, v=text: self.operation_clicked(v))
 
-        # Hide keypad initially
+                self.buttonGrid.addWidget(button, row, col)
+
         self.buttonGridWidget.setVisible(False)
 
         # Layout
         TopRow.addWidget(self.Lbl)
         TopRow.addStretch()
         TopRow.addWidget(self.toggleBtn)
-        TopRow.addWidget(self.updateBtn)
+        TopRow.addWidget(self.infoBtn)
 
         MainLayout.addLayout(TopRow)
-
-        # First conversion
         MainLayout.addWidget(self.inputbox1)
         MainLayout.addWidget(self.combo1)
 
         SwapLayout = QtWidgets.QHBoxLayout()
-
         SwapLayout.addStretch()
         SwapLayout.addWidget(self.swapButton)
         SwapLayout.addStretch()
@@ -182,20 +175,27 @@ class CurrencyCalculator(QtWidgets.QWidget):
         if self.combo2.count() > 0:
             self.getCurrency(self.combo2.currentText(), "to")
 
+        # Check the network every 3 seconds
+        self.networkTimer = QtCore.QTimer(self)
+        self.networkTimer.timeout.connect(self.Checknetwork)
+        self.networkTimer.start(3000)
+
+        self.Checknetwork()
+
         QtCore.QTimer.singleShot(0, self.convertCurrencies)
 
-    # Get the countries currency title/short form
+    # Get the currency code from the combo box
     def getCurrency(self, text, comboTag):
-        currency = text.split("(")[1].replace(")", "")
+        if not text or "(" not in text:
+            return
+
+        currency = text.rsplit("(", 1)[1].replace(")", "").strip()
 
         if comboTag == "from":
             self.fromCurrency = currency
         elif comboTag == "to":
             self.toCurrency = currency
 
-        #print("From:", self.fromCurrency)
-        #print("To:", self.toCurrency)
-    
     def convertCurrencies(self):
         if self.converting:
             return
@@ -203,7 +203,11 @@ class CurrencyCalculator(QtWidgets.QWidget):
         if not self.fromCurrency or not self.toCurrency:
             return
 
-        text = self.inputbox1.text()
+        if not self.networkStatus:
+            self.inputbox2.clear()
+            return
+
+        text = self.inputbox1.text().strip()
 
         if not text:
             amount = 0
@@ -223,30 +227,26 @@ class CurrencyCalculator(QtWidgets.QWidget):
             response = requests.get(url, timeout=5)
             response.raise_for_status()
             data = response.json()
-            rate = data["rate"]
-            convertedAmount = amount * rate
-            self.inputbox2.setText(f"{convertedAmount:.2f}")
+            convertedAmount = amount * data["rate"]
+            self.inputbox2.setText(self.format_number(convertedAmount))
         except requests.RequestException as error:
             print("API error:", error)
         except (KeyError, TypeError, ValueError) as error:
             print("Conversion error:", error)
 
-    # Focus tracking
+    # Track which input has focus
     def createFocusHandler(self, lineEdit, originalFocusEvent):
         def focusEvent(event):
             self.currentInput = lineEdit
             originalFocusEvent(event)
-
         return focusEvent
 
-    # Show the buttongrid
     def showButtons(self, checked):
         self.buttonGridWidget.setVisible(checked)
         self.adjustSize()
-    
-    # Swap units
+
     def swapUnits(self):
-        if self.converting:
+        if self.converting or not self.networkStatus:
             return
 
         self.converting = True
@@ -268,7 +268,6 @@ class CurrencyCalculator(QtWidgets.QWidget):
 
             self.inputbox1.setText(value2)
             self.inputbox2.setText(value1)
-
         finally:
             self.converting = False
 
@@ -282,8 +281,7 @@ class CurrencyCalculator(QtWidgets.QWidget):
 
         self.convertCurrencies()
 
-    #The function to run an keypress event
-    #If the user uses the keyborad to input their calculations
+    # Handle keyboard input for the calculator
     def eventFilter(self, obj, event):
         if event.type() != QtCore.QEvent.Type.KeyPress:
             return super().eventFilter(obj, event)
@@ -297,6 +295,9 @@ class CurrencyCalculator(QtWidgets.QWidget):
 
         if isinstance(obj, QtWidgets.QComboBox):
             return super().eventFilter(obj, event)
+
+        if self.currentInput is None:
+            self.currentInput = self.inputbox1
 
         if text.isdigit():
             self.number_clicked(text)
@@ -315,20 +316,18 @@ class CurrencyCalculator(QtWidgets.QWidget):
 
         return super().eventFilter(obj, event)
 
-    # Number formatting
+    # Format numbers without unnecessary zeros
     def format_number(self, value):
-        # Scientific notation for very large/small numbers
         if value != 0 and (abs(value) >= 1e12 or abs(value) < 1e-9):
             return f"{value:.10g}"
 
-        # Normal number
-        text = (f"{value:.10f}".rstrip("0").rstrip("."))
+        text = f"{value:.10f}".rstrip("0").rstrip(".")
 
         if text == "-0":
             text = "0"
+
         return text
 
-    # Number keypad
     def number_clicked(self, value):
         line_edit = self.currentInput
 
@@ -338,7 +337,6 @@ class CurrencyCalculator(QtWidgets.QWidget):
 
         current = line_edit.text()
 
-        # Decimal point
         if value == ".":
             if "." in current:
                 return
@@ -347,13 +345,11 @@ class CurrencyCalculator(QtWidgets.QWidget):
                 line_edit.setText("0.")
                 return
 
-        # Replace initial zero
         if current == "0" and value != ".":
             line_edit.setText(value)
         else:
             line_edit.insert(value)
 
-    # Calculator operations
     def operation_clicked(self, value):
         lineEdit = self.currentInput
 
@@ -379,9 +375,13 @@ class CurrencyCalculator(QtWidgets.QWidget):
             lineEdit.setText("0")
             return
 
-    #Update the unitLbl when the user changes unit measurements
+    # Update the displayed exchange rate
     def updateUnitLabel(self):
         if not self.fromCurrency or not self.toCurrency:
+            self.unitLbl.clear()
+            return
+
+        if not self.networkStatus:
             self.unitLbl.clear()
             return
 
@@ -394,20 +394,17 @@ class CurrencyCalculator(QtWidgets.QWidget):
         try:
             response = requests.get(url, timeout=5)
             response.raise_for_status()
-
             data = response.json()
             rate = data["rate"]
-
             self.unitLbl.setText(f"1 {self.fromCurrency} = {rate:.4f} {self.toCurrency}")
-
         except requests.RequestException as error:
             print("API error:", error)
             self.unitLbl.clear()
-
         except (KeyError, TypeError, ValueError) as error:
             print("Rate error:", error)
             self.unitLbl.clear()
 
+    # Replace an empty input with zero
     def setInput(self, text):
         if self.converting:
             return
@@ -421,3 +418,60 @@ class CurrencyCalculator(QtWidgets.QWidget):
             return
 
         self.convertCurrencies()
+
+    # Check whether the Frankfurter API is reachable
+    def Checknetwork(self):
+        try:
+            socket.create_connection(("api.frankfurter.dev", 443), timeout=2)
+
+            wasDisconnected = not self.networkStatus
+            self.networkStatus = True
+
+            self.inputbox1.setEnabled(True)
+            self.combo1.setEnabled(True)
+            self.swapButton.setEnabled(True)
+            self.inputbox2.setEnabled(True)
+            self.combo2.setEnabled(True)
+
+            self.networkWarningShown = False
+            self.updateNetworkTooltip()
+
+            if wasDisconnected:
+                self.updateUnitLabel()
+                self.convertCurrencies()
+
+            return True
+
+        except OSError:
+            wasConnected = self.networkStatus
+            self.networkStatus = False
+
+            self.inputbox1.setEnabled(False)
+            self.combo1.setEnabled(False)
+            self.swapButton.setEnabled(False)
+            self.inputbox2.setEnabled(False)
+            self.combo2.setEnabled(False)
+
+            self.inputbox2.clear()
+            self.unitLbl.clear()
+            self.updateNetworkTooltip()
+
+            if wasConnected and not self.networkWarningShown:
+                QMessageBox.warning(self, "No Internet Connection", "An internet connection is required for currency conversion.")
+                self.networkWarningShown = True
+
+            return False
+
+    def updateNetworkTooltip(self):
+        if self.networkStatus:
+            status = '<span style="color: green;">Connected</span>'
+        else:
+            status = '<span style="color: red;">Disconnected</span>'
+
+        self.infoBtn.setToolTip(f"For up to date rates, ensure you have an internet connection.<br>Network connection: {status}")
+
+    def closeEvent(self, event):
+        if hasattr(self, "networkTimer"):
+            self.networkTimer.stop()
+
+        event.accept()

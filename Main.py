@@ -10,6 +10,7 @@ from Source.paper import PaperCalculator
 #Unit Conversions
 from Source.area import AreaCalculator
 from Source.currency import CurrencyCalculator
+from Source.date import DateCalculator
 
 appName = "Calculator"
 
@@ -53,6 +54,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.CurrView.setShortcut("Alt+5")
         
         self.DateView = QtGui.QAction("Date Calculation", self) #Date Calculation
+        self.DateView.setIcon(qta.icon("fa5.calendar-alt"))
         self.DateView.setShortcut("Alt+6")
         
         self.DataView = QtGui.QAction("Data", self) #Data
@@ -121,6 +123,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.PaperView.triggered.connect(self.show_paper)
         self.AreaView.triggered.connect(self.show_Area)
         self.CurrView.triggered.connect(self.show_Curren)
+        self.DateView.triggered.connect(self.show_Date)
 
         # Start with Standard
         self.show_standard()
@@ -180,6 +183,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.curren_calculator = CurrencyCalculator()
         self.calculators.addWidget(self.curren_calculator)
         self.calculators.setCurrentWidget(self.curren_calculator)
+        self.adjustSize()
+
+    # Display Date Calculator
+    def show_Date(self):
+        self.ClearCurrentFrame()
+        self.date_calculator = DateCalculator()
+        self.calculators.addWidget(self.date_calculator)
+        self.calculators.setCurrentWidget(self.date_calculator)
         self.adjustSize()
 
 
