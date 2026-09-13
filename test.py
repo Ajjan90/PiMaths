@@ -2,6 +2,8 @@ import sys
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QDateTimeEdit
 from PySide6.QtCore import QDateTime
 #from countryinfo import CountryInfo
+from datetime import date
+from dateutil.relativedelta import relativedelta
 
 
 #app = QApplication(sys.argv)
@@ -25,12 +27,18 @@ from PySide6.QtCore import QDateTime
 #def convert(value, from_unit, to_unit):
 #    return (value * ureg(from_unit)).to(to_unit)
 
-from countryinfo import all_countries
+start = date(2020, 6, 5)
+end = date(2026, 9, 13)
 
-countries = all_countries()
+result = end - start
 
-for country in countries:
-    currencies = country.currencies()
+total_days = result.days
+weeks = total_days // 7
+days = total_days % 7
 
-    if currencies:
-        print(f"{country.name()}: {currencies[0]}")
+difference = relativedelta(end, start)
+
+print(f"Days: {total_days}")
+print(f"Weeks: {weeks} weeks, {days} days")
+print(f"Months: {difference.months} months, {difference.days} days")
+print(f"Years: {difference.years} years, {difference.months} months, {difference.days} days")

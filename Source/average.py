@@ -217,6 +217,9 @@ class AverageCalculator(QtWidgets.QWidget):
         mainLayout.addLayout(layout, 3)
         mainLayout.addWidget(self.historyPanel, 1)
 
+        # Push everything toward the top
+        mainLayout.addStretch()
+
         QtWidgets.QApplication.instance().installEventFilter(self)
 
     #The function to run a keypress event

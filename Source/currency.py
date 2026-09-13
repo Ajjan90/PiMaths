@@ -123,7 +123,12 @@ class CurrencyCalculator(QtWidgets.QWidget):
         self.buttonGrid.setContentsMargins(0, 10, 0, 0)
         self.buttonGrid.setSpacing(5)
 
-        buttons = [["CE", "backspace"], ["7", "8", "9"], ["4", "5", "6"], ["1", "2", "3"], [".", "0"]]
+        buttons = [["CE", "backspace"], 
+                   ["7", "8", "9"], 
+                   ["4", "5", "6"], 
+                   ["1", "2", "3"], 
+                   [".", "0"]
+                   ]
 
         for row, buttonRow in enumerate(buttons):
             for col, text in enumerate(buttonRow):
