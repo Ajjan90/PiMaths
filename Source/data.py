@@ -2,18 +2,33 @@ from PySide6 import QtWidgets, QtCore, QtGui
 import qtawesome as qta
 from pint import UnitRegistry
 
-# Area units
+# Data units
 data_measurements = [
-    "Square Millimeters",
-    "Square Centimeters",
-    "Square Meters",
-    "Square Kilometers",
-    "Square Inches",
-    "Square Feet",
-    "Square Yards",
-    "Square Miles",
-    "Acres",
-    "Hectares",
+    "Bits",
+    "Bytes",
+    "Kilobits",
+    "Kibibytes",
+    "Kilobytes",
+    "Mebibytes",
+    "Megabits",
+    "Megabytes",
+    "Gibibytes",
+    "Gigabits",
+    "Gigabytes",
+    "Tebibytes",
+    "Terabits",
+    "Terabytes",
+    "Pebibytes",
+    "Petabits",
+    "Petabytes",
+    "Exbibytes",
+    "Exabytes",
+    "Zebibytes",
+    "Zettabytes",
+    "Yobibytes",
+    "Yottabytes",
+    "Ronnabytes",
+    "Quettabytes",
 ]
 
 
@@ -38,6 +53,7 @@ class DataCalculator(QtWidgets.QWidget):
         # Title and keypad toggle
         topRow = QtWidgets.QHBoxLayout()
 
+        # Title
         title = QtWidgets.QLabel("Data")
         titleFont = QtGui.QFont("Arial", 14)
         titleFont.setBold(True)
@@ -73,7 +89,7 @@ class DataCalculator(QtWidgets.QWidget):
         self.combo1.setFont(comboFont)
         self.combo1.setMinimumHeight(40)
         self.combo1.addItems(data_measurements)
-        self.combo1.setCurrentText("Square Meters")
+        #self.combo1.setCurrentText("Square Meters")
         self.combo1.currentTextChanged.connect(self.unit1Changed)
 
         # Swap button
@@ -100,12 +116,13 @@ class DataCalculator(QtWidgets.QWidget):
         self.combo2.setFont(comboFont)
         self.combo2.setMinimumHeight(40)
         self.combo2.addItems(data_measurements)
-        self.combo2.setCurrentText("Square Feet")
+        #self.combo2.setCurrentText("Square Feet")
         self.combo2.currentTextChanged.connect(self.unit2Changed)
 
         # Unit comparison label
         self.unitLbl = QtWidgets.QLabel()
         self.unitLbl.setFont(QtGui.QFont("Arial", 12))
+        self.unitLbl.setStyleSheet("color: gray;")
 
         # Keypad
         self.buttonGridWidget = QtWidgets.QWidget()
@@ -169,32 +186,62 @@ class DataCalculator(QtWidgets.QWidget):
     # Convert a unit name into a Pint unit.
     def PintUnit(self, unit_name):
         units = {
-            "Square Millimeters": self.u.mm ** 2,
-            "Square Centimeters": self.u.cm ** 2,
-            "Square Meters": self.u.m ** 2,
-            "Square Kilometers": self.u.km ** 2,
-            "Square Inches": self.u.inch ** 2,
-            "Square Feet": self.u.ft ** 2,
-            "Square Yards": self.u.yd ** 2,
-            "Square Miles": self.u.mile ** 2,
-            "Acres": self.u.acre,
-            "Hectares": self.u.hectare,
+            "Bits": self.u.bit,
+            "Bytes": self.u.byte,
+            "Kilobits": self.u.kilobit,
+            "Kibibytes": self.u.kibibyte,
+            "Kilobytes": self.u.kilobyte,
+            "Mebibytes": self.u.mebibyte,
+            "Megabits": self.u.megabit,
+            "Megabytes": self.u.megabyte,
+            "Gibibytes": self.u.gibibyte,
+            "Gigabits": self.u.gigabit,
+            "Gigabytes": self.u.gigabyte,
+            "Tebibytes": self.u.tebibyte,
+            "Terabits": self.u.terabit,
+            "Terabytes": self.u.terabyte,
+            "Pebibytes": self.u.pebibyte,
+            "Petabits": self.u.petabit,
+            "Petabytes": self.u.petabyte,
+            "Exbibytes": self.u.exbibyte,
+            "Exabytes": self.u.exabyte,
+            "Zebibytes": self.u.zebibyte,
+            "Zettabytes": self.u.zettabyte,
+            "Yobibytes": self.u.yobibyte,
+            "Yottabytes": self.u.yottabyte,
+            "Ronnabytes": self.u.ronnabyte,
+            "Quettabytes": self.u.quettabyte,
         }
         return units[unit_name]
+
 
     # Return the short display name for a unit.
     def unitDisplayName(self, unit_name):
         names = {
-            "Square Millimeters": "mm²",
-            "Square Centimeters": "cm²",
-            "Square Meters": "m²",
-            "Square Kilometers": "km²",
-            "Square Inches": "in²",
-            "Square Feet": "ft²",
-            "Square Yards": "yd²",
-            "Square Miles": "mi²",
-            "Acres": "acres",
-            "Hectares": "hectares",
+            "Bits": "bit",
+            "Bytes": "B",
+            "Kilobits": "Kbit",
+            "Kibibytes": "KiB",
+            "Kilobytes": "KB",
+            "Mebibytes": "MiB",
+            "Megabits": "Mbit",
+            "Megabytes": "MB",
+            "Gibibytes": "GiB",
+            "Gigabits": "Gbit",
+            "Gigabytes": "GB",
+            "Tebibytes": "TiB",
+            "Terabits": "Tbit",
+            "Terabytes": "TB",
+            "Petabits": "Pbit",
+            "Petabytes": "PB",
+            "Exbibytes": "EiB",
+            "Exabytes": "EB",
+            "Zebibytes": "ZiB",
+            "Zettabytes": "ZB",
+            "Yobibytes": "YiB",
+            "Yottabytes": "YB",
+            "Ronnabytes": "RB",
+            "Quettabytes": "QB",
         }
         return names[unit_name]
 
@@ -411,6 +458,8 @@ class DataCalculator(QtWidgets.QWidget):
 
             unit1 = self.unitDisplayName(self.combo1.currentText())
             unit2 = self.unitDisplayName(self.combo2.currentText())
+
+            #self.inputbox1.s(unit1)
 
             self.unitLbl.setText(
                 f"1 {unit1} = {converted} {unit2}"

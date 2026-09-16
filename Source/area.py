@@ -106,6 +106,7 @@ class AreaCalculator(QtWidgets.QWidget):
         # Unit comparison label
         self.unitLbl = QtWidgets.QLabel()
         self.unitLbl.setFont(QtGui.QFont("Arial", 12))
+        self.unitLbl.setStyleSheet("color: gray;")
 
         # Keypad
         self.buttonGridWidget = QtWidgets.QWidget()

@@ -66,16 +66,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.EneView.setShortcut("Alt+8")
         
         self.LenView = QtGui.QAction("Length", self) #Length
-        self.LenView.setShortcut("Alt+9")
+        self.LenView.setShortcut("Alt+9") #fa6s.ruler-horizontal
 
         self.preView = QtGui.QAction("Pressure", self) #Pressure
         self.preView.setShortcut("Alt+Shift+1")
 
         self.powView = QtGui.QAction("Power", self) #Power
-        self.powView.setShortcut("Alt+Shift+2")
+        self.powView.setShortcut("Alt+Shift+2") #fa6s.bolt-lightning
 
         self.speedView = QtGui.QAction("Speed", self) #Speed
-        self.speedView.setShortcut("Alt+Shift+3")
+        self.speedView.setShortcut("Alt+Shift+3") #mdi.speedometer-medium
 
         self.TemView = QtGui.QAction("Temperature", self) #Temperature
         self.TemView.setShortcut("Alt+Shift+4")
