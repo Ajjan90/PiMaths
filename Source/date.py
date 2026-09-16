@@ -14,10 +14,11 @@ class DateCalculator(QtWidgets.QWidget):
         MainLayout.setContentsMargins(10, 10, 10, 10)
 
         # Fonts
-        self.dateFont = QtGui.QFont("Arial", 16)
-        self.lblFont = QtGui.QFont("Arial", 12)
-        self.headFont = QtGui.QFont("Arial", 13)
-        self.headFont.setBold(True)
+        self.dateFont = QtGui.QFont("Arial", 16) # Font type for the datetimepicker
+        self.lblFont = QtGui.QFont("Arial", 12) # Font type for the labels
+
+        self.headFont = QtGui.QFont("Arial", 13) # Font type for the header labels
+        self.headFont.setBold(True) 
 
         # Title
         self.Lbl = QtWidgets.QLabel("Date Calculation")
@@ -42,12 +43,13 @@ class DateCalculator(QtWidgets.QWidget):
                                             min-height: 42px;
                                             max-height: 42px;
                                         }
-                                    """)
+                                    """) # Define a fixed height for the tabs
 
         # Layout
         MainLayout.addWidget(self.Lbl)
         MainLayout.addWidget(self.tabControl)
 
+    # To create the Difference Date calculator for Tabpage1
     def DifferenceDate(self):
         # Tab layout
         self.betDayTab = QtWidgets.QWidget()
@@ -123,9 +125,10 @@ class DateCalculator(QtWidgets.QWidget):
         self.betDayLayout.addWidget(self.detLbl)
         self.betDayLayout.addStretch()
 
+        # Function to run the date difference calculations
         def calculateDate():
-            start = self.strPicker.date().toPython()
-            end = self.endPicker.date().toPython()
+            start = self.strPicker.date().toPython() # Get the date data from the first date picker in python date format
+            end = self.endPicker.date().toPython() # Get the date data from the second date picker in python date format
             result = 0
             difference = 0
 
@@ -136,6 +139,7 @@ class DateCalculator(QtWidgets.QWidget):
                 result = end - start
                 difference = relativedelta(end, start)
 
+            # get the total number of days from the result varaible
             TotalDays = result.days
 
             self.daysLbl.setText(f"{TotalDays} days")
@@ -158,13 +162,14 @@ class DateCalculator(QtWidgets.QWidget):
                 remainingDays = difference.days % 7
                 self.detLbl.setText(f"{difference.years} Years, {difference.months} Months, {weeks} Weeks and {remainingDays} Days")
 
+        # Function to reset the datetimepicker and the labels to default as it was
         def refreshInputs():
             self.strPicker.setDateTime(QDateTime.currentDateTime())
             self.endPicker.setDateTime(QDateTime.currentDateTime())
             self.dayLbl.setText("Same date")
             self.detLbl.setText("")
 
-
+    # To create the Add/Subtract dates calculator for Tabpage2
     def AddSubDate(self):
         # Tab layout
         self.asDayTab = QtWidgets.QWidget()
@@ -186,15 +191,18 @@ class DateCalculator(QtWidgets.QWidget):
         self.radioLayout = QtWidgets.QHBoxLayout()
         self.radioLayout.setSpacing(20)
 
+        # Add (+) radio button. Set to checked by default
         self.addRadio = QtWidgets.QRadioButton("Add (+)")
         self.addRadio.setFont(self.lblFont)
         self.addRadio.setChecked(True)
         self.addRadio.toggled.connect(lambda: DateCalculation())
 
+        # Subtract (-) radio button
         self.subRadio = QtWidgets.QRadioButton("Subtract (-)")
         self.subRadio.setFont(self.lblFont)
         self.subRadio.toggled.connect(lambda: DateCalculation())
 
+        # Add the radio buttons into the radioLayout
         self.radioLayout.addWidget(self.addRadio)
         self.radioLayout.addWidget(self.subRadio)
         self.radioLayout.addStretch()
@@ -289,11 +297,11 @@ class DateCalculator(QtWidgets.QWidget):
         self.asDayLayout.addStretch()
 
         def DateCalculation():
-            fromDate = self.fromPicker.date().toPython()
+            fromDate = self.fromPicker.date().toPython() # Get the date data from the date picker in python date format
 
-            day = self.dayNum.value()
-            month = self.monthNum.value()
-            year = self.yearNum.value()
+            day = self.dayNum.value() # Get the day value
+            month = self.monthNum.value() # Get the month value
+            year = self.yearNum.value() # Get the year value
 
             difference = relativedelta(years=year, months=month, days=day)
 
@@ -302,8 +310,10 @@ class DateCalculator(QtWidgets.QWidget):
             elif self.subRadio.isChecked():
                 fullDate = fromDate - difference
 
-            self.outlbl.setText(f"Date: {fullDate.strftime('%d %B %Y')}")
+            self.outlbl.setText(f"Date: {fullDate.strftime('%d %B %Y')}") 
+            #%B displays the months by letters instead of numbers which makes it easier yo read
 
+        # Function to reset the Datetimepicker and labels to default inputs
         def refreshInputs():
             self.fromPicker.setDateTime(QDateTime.currentDateTime())
             self.dayNum.setValue(0)

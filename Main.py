@@ -11,6 +11,7 @@ from Source.paper import PaperCalculator
 from Source.area import AreaCalculator
 from Source.currency import CurrencyCalculator
 from Source.date import DateCalculator
+from Source.data import DataCalculator
 
 appName = "Calculator"
 
@@ -58,6 +59,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.DateView.setShortcut("Alt+6")
         
         self.DataView = QtGui.QAction("Data", self) #Data
+        self.DataView.setIcon(qta.icon("fa6s.hard-drive"))
         self.DataView.setShortcut("Alt+7")
 
         self.EneView = QtGui.QAction("Energy", self) #Energy
@@ -124,6 +126,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.AreaView.triggered.connect(self.show_Area)
         self.CurrView.triggered.connect(self.show_Curren)
         self.DateView.triggered.connect(self.show_Date)
+        self.DataView.triggered.connect(self.show_Data)
 
         # Start with Standard
         self.show_standard()
@@ -191,6 +194,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.date_calculator = DateCalculator()
         self.calculators.addWidget(self.date_calculator)
         self.calculators.setCurrentWidget(self.date_calculator)
+        self.adjustSize()
+
+    # Display Data Calculator
+    def show_Data(self):
+        self.ClearCurrentFrame()
+        self.data_calculator = DataCalculator()
+        self.calculators.addWidget(self.data_calculator)
+        self.calculators.setCurrentWidget(self.data_calculator)
         self.adjustSize()
 
 
