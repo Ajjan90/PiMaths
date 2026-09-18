@@ -12,6 +12,7 @@ from Source.area import AreaCalculator
 from Source.currency import CurrencyCalculator
 from Source.date import DateCalculator
 from Source.data import DataCalculator
+from Source.energy import EnergyCalculator
 
 appName = "Calculator"
 
@@ -63,10 +64,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.DataView.setShortcut("Alt+7")
 
         self.EneView = QtGui.QAction("Energy", self) #Energy
+        self.EneView.setIcon(qta.icon("fa6s.bolt"))
         self.EneView.setShortcut("Alt+8")
         
         self.LenView = QtGui.QAction("Length", self) #Length
-        self.LenView.setShortcut("Alt+9") #fa6s.ruler-horizontal
+        self.LenView.setIcon(qta.icon("fa6s.ruler-horizontal"))
+        self.LenView.setShortcut("Alt+9")
 
         self.preView = QtGui.QAction("Pressure", self) #Pressure
         self.preView.setShortcut("Alt+Shift+1")
@@ -127,6 +130,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.CurrView.triggered.connect(self.show_Curren)
         self.DateView.triggered.connect(self.show_Date)
         self.DataView.triggered.connect(self.show_Data)
+        self.EneView.triggered.connect(self.show_Energy)
 
         # Start with Standard
         self.show_standard()
@@ -202,6 +206,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.data_calculator = DataCalculator()
         self.calculators.addWidget(self.data_calculator)
         self.calculators.setCurrentWidget(self.data_calculator)
+        self.adjustSize()
+
+    # Display Energy Calculator
+    def show_Energy(self):
+        self.ClearCurrentFrame()
+        self.ene_calculator = EnergyCalculator()
+        self.calculators.addWidget(self.ene_calculator)
+        self.calculators.setCurrentWidget(self.ene_calculator)
         self.adjustSize()
 
 
