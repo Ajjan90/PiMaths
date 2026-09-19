@@ -14,6 +14,7 @@ from Source.date import DateCalculator
 from Source.data import DataCalculator
 from Source.energy import EnergyCalculator
 from Source.length import LengthCalculator
+from Source.mass import MassCalculator
 
 appName = "Calculator"
 
@@ -134,6 +135,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.DataView.triggered.connect(self.show_Data)
         self.EneView.triggered.connect(self.show_Energy)
         self.LenView.triggered.connect(self.show_Length)
+        self.MassView.triggered.connect(self.show_Mass)
 
         # Start with Standard
         self.show_standard()
@@ -225,6 +227,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.len_calculator = LengthCalculator()
         self.calculators.addWidget(self.len_calculator)
         self.calculators.setCurrentWidget(self.len_calculator)
+        self.adjustSize()
+
+    # Display Mass Calculator
+    def show_Mass(self):
+        self.ClearCurrentFrame()
+        self.mass_calculator = MassCalculator()
+        self.calculators.addWidget(self.mass_calculator)
+        self.calculators.setCurrentWidget(self.mass_calculator)
         self.adjustSize()
 
 
