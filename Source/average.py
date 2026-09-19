@@ -92,7 +92,7 @@ class AverageCalculator(QtWidgets.QWidget):
 
         #Keep columns compact
         lblGrid.setColumnStretch(0, 0)
-        lblGrid.setColumnStretch(1, 0)
+        lblGrid.setColumnStretch(0, 0)
 
         #The grid layout for the buttons
         buttonGrid = QtWidgets.QGridLayout()

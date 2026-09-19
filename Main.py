@@ -13,6 +13,7 @@ from Source.currency import CurrencyCalculator
 from Source.date import DateCalculator
 from Source.data import DataCalculator
 from Source.energy import EnergyCalculator
+from Source.length import LengthCalculator
 
 appName = "Calculator"
 
@@ -71,8 +72,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.LenView.setIcon(qta.icon("fa6s.ruler-horizontal"))
         self.LenView.setShortcut("Alt+9")
 
-        self.preView = QtGui.QAction("Pressure", self) #Pressure
-        self.preView.setShortcut("Alt+Shift+1")
+        self.MassView = QtGui.QAction("Mass", self) #Mass
+        self.MassView.setIcon(qta.icon("mdi.weight"))
+        self.MassView.setShortcut("Alt+Shift+1")
 
         self.powView = QtGui.QAction("Power", self) #Power
         self.powView.setShortcut("Alt+Shift+2") #fa6s.bolt-lightning
@@ -107,7 +109,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ViewMenu.addAction(action)
 
         self.ViewMenu.addSeparator()
-        view_actions = [self.AreaView, self.CurrView, self.DateView, self.DataView, self.EneView, self.LenView, self.preView, self.powView, self.speedView, self.TemView, self.TimeView, self.VolView]        
+        view_actions = [self.AreaView, self.CurrView, self.DateView, self.DataView, self.EneView, self.LenView, self.MassView, self.powView, self.speedView, self.TemView, self.TimeView, self.VolView]        
         for action in view_actions:
             self.ViewMenu.addAction(action)
             
@@ -131,6 +133,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.DateView.triggered.connect(self.show_Date)
         self.DataView.triggered.connect(self.show_Data)
         self.EneView.triggered.connect(self.show_Energy)
+        self.LenView.triggered.connect(self.show_Length)
 
         # Start with Standard
         self.show_standard()
@@ -214,6 +217,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ene_calculator = EnergyCalculator()
         self.calculators.addWidget(self.ene_calculator)
         self.calculators.setCurrentWidget(self.ene_calculator)
+        self.adjustSize()
+
+    # Display Length Calculator
+    def show_Length(self):
+        self.ClearCurrentFrame()
+        self.len_calculator = LengthCalculator()
+        self.calculators.addWidget(self.len_calculator)
+        self.calculators.setCurrentWidget(self.len_calculator)
         self.adjustSize()
 
 

@@ -2,4 +2,5 @@ PySide6
 qtawesome
 pint
 countryinfo
-libxcb-cursor0
+requests
+python-dateutil
