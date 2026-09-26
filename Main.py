@@ -221,5 +221,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication([])
     window = MainWindow()
     app.setApplicationName(appName)
+    #app.setWindowIcon(QtGui.QIcon("PiMaths.ico"))
+    #window.setWindowIcon(QtGui.QIcon("PiMaths.ico"))
     window.show()
     app.exec()
