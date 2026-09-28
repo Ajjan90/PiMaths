@@ -32,8 +32,8 @@
 | <img src="https://github.com/Ajjan90/PiMaths/blob/main/img/Cal/dateCal.png" />  | Date Calculation      | Perform date calculations by either calculating the number of days within a date range or add/subtract number of days, months and years from the selected date.  |
 | <img src="https://github.com/Ajjan90/PiMaths/blob/main/img/Cal/DataCal.png" />  | Data Convertor        | Perform data conversions from bits, megabytes, gigabytes and many more digital data storage units.  |
 | <img src="https://github.com/Ajjan90/PiMaths/blob/main/img/Cal/EneCal.png" />  | Energy Convertor      | Perform energy conversions measurements from joules, kilojoules and many more energy units. |
-| <img src="" />  | Length Convertor      | Perform length conversions measurements from centimetres, millimetres, feet, inches and many more length units.  |
-| <img src="" />  | Mass Convertor        | Perform mass conversions measurements from grams, kilograms, pounds and more.  |
+| <img src="https://github.com/Ajjan90/PiMaths/blob/main/img/Cal/LenCal.png" />  | Length Convertor      | Perform length conversions measurements from centimetres, millimetres, feet, inches and many more length units.  |
+| <img src="https://github.com/Ajjan90/PiMaths/blob/main/img/Cal/MassCal.png" />  | Mass Convertor        | Perform mass conversions measurements from grams, kilograms, pounds and more.  |
 | N/A  | Power Convertor       | N/A  |
 | N/A  | Speed Convertor       | N/A  |
 | N/A  | Temperature Convertor | N/A  |
@@ -46,4 +46,7 @@
 |---------|-------------|
 | History | In the Standard and Scientific calculators, you can view your calculation history by clicking the <img src="https://github.com/Ajjan90/PiMaths/blob/main/img/Cal/ViewBtnImg.png" /> **View History** button on the top right. You can recall calculations that you performed and can also copy or delete them from the history. |
 | Memory | In the Scientific calculator, you can store the current calculated value in **Memory**, which can later be recalled, added to, subtracted from, or cleared completely. You can access the Memory list by clicking the **View List** button on the top right and navigating to the **Memory** tab. |
+
+<h1>Documentation</h1>
+<p> If you want to initialize PiMaths or want to modify it for your own purpose, use the documentation provided to clone and run PiMaths on your system </p>
 
