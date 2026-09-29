@@ -4,3 +4,4 @@ pint
 countryinfo
 requests
 python-dateutil
+pytemperature

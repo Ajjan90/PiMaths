@@ -1,5 +1,5 @@
 from PySide6 import QtWidgets, QtCore, QtGui
-from PySide6.QtWidgets import QLabel
+#from PySide6.QtWidgets import QLabel
 import qtawesome as qta
 
 from Source.standard import StandardCalculator
@@ -15,6 +15,9 @@ from Source.data import DataCalculator
 from Source.energy import EnergyCalculator
 from Source.length import LengthCalculator
 from Source.mass import MassCalculator
+from Source.power import PowerCalculator
+from Source.speed import SpeedCalculator
+from Source.temp import TempCalculator
 
 appName = "Calculator"
 
@@ -78,12 +81,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.MassView.setShortcut("Alt+Shift+1")
 
         self.powView = QtGui.QAction("Power", self) #Power
-        self.powView.setShortcut("Alt+Shift+2") #fa6s.bolt-lightning
+        self.powView.setIcon(qta.icon("fa6s.bolt-lightning"))
+        self.powView.setShortcut("Alt+Shift+2") 
 
         self.speedView = QtGui.QAction("Speed", self) #Speed
-        self.speedView.setShortcut("Alt+Shift+3") #mdi.speedometer-medium
+        self.speedView.setIcon(qta.icon("mdi.car-sports"))
+        self.speedView.setShortcut("Alt+Shift+3")
 
         self.TemView = QtGui.QAction("Temperature", self) #Temperature
+        self.TemView.setIcon(qta.icon("fa5s.temperature-high"))
         self.TemView.setShortcut("Alt+Shift+4")
         
         self.TimeView = QtGui.QAction("Time", self) #Time
@@ -136,6 +142,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.EneView.triggered.connect(self.show_Energy)
         self.LenView.triggered.connect(self.show_Length)
         self.MassView.triggered.connect(self.show_Mass)
+        self.powView.triggered.connect(self.show_Power)
+        self.speedView.triggered.connect(self.show_Speed)
+        self.TemView.triggered.connect(self.show_Temp)
 
         # Start with Standard
         self.show_standard()
@@ -236,6 +245,36 @@ class MainWindow(QtWidgets.QMainWindow):
         self.calculators.addWidget(self.mass_calculator)
         self.calculators.setCurrentWidget(self.mass_calculator)
         self.adjustSize()
+
+    # Display Power Calculator
+    def show_Power(self):
+        self.ClearCurrentFrame()
+        self.power_calculator = PowerCalculator()
+        self.calculators.addWidget(self.power_calculator)
+        self.calculators.setCurrentWidget(self.power_calculator)
+        self.adjustSize()
+
+    # Display Speed Calculator
+    def show_Speed(self):
+        self.ClearCurrentFrame()
+        self.speed_calculator = SpeedCalculator()
+        self.calculators.addWidget(self.speed_calculator)
+        self.calculators.setCurrentWidget(self.speed_calculator)
+        self.adjustSize()
+
+    # Display Temperature Calculator
+    def show_Temp(self):
+        self.ClearCurrentFrame()
+        self.temp_calculator = TempCalculator()
+        self.calculators.addWidget(self.temp_calculator)
+        self.calculators.setCurrentWidget(self.temp_calculator)
+        self.adjustSize()
+
+    # Display Time Calculator
+
+
+    #Display Volume Calculator
+    
 
 
 if __name__ == "__main__":

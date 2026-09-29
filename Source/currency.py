@@ -4,6 +4,7 @@ import qtawesome as qta
 import requests
 from countryinfo import all_countries
 import socket
+import random
 
 countries = all_countries()
 
@@ -108,6 +109,9 @@ class CurrencyCalculator(QtWidgets.QWidget):
                 formatComboItem = f"{country.name()} ({currencies[0]})"
                 self.combo1.addItem(formatComboItem)
                 self.combo2.addItem(formatComboItem)
+
+        self.combo1.setCurrentIndex(random.randrange(self.combo1.count()))
+        self.combo2.setCurrentIndex(random.randrange(self.combo2.count()))
 
         # Display the current exchange rate
         self.unitLbl = QtWidgets.QLabel()
