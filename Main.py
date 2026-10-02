@@ -18,6 +18,7 @@ from Source.mass import MassCalculator
 from Source.power import PowerCalculator
 from Source.speed import SpeedCalculator
 from Source.temp import TempCalculator
+from Source.time import TimeCalculator
 
 appName = "Calculator"
 
@@ -93,6 +94,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.TemView.setShortcut("Alt+Shift+4")
         
         self.TimeView = QtGui.QAction("Time", self) #Time
+        self.TimeView.setIcon(qta.icon("fa5s.clock"))
         self.TimeView.setShortcut("Alt+Shift+5")
 
         self.VolView = QtGui.QAction("Volume", self) #Volume
@@ -145,6 +147,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.powView.triggered.connect(self.show_Power)
         self.speedView.triggered.connect(self.show_Speed)
         self.TemView.triggered.connect(self.show_Temp)
+        self.TimeView.triggered.connect(self.show_Time)
 
         # Start with Standard
         self.show_standard()
@@ -271,7 +274,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.adjustSize()
 
     # Display Time Calculator
-
+    def show_Time(self):
+        self.ClearCurrentFrame()
+        self.time_calculator = TimeCalculator()
+        self.calculators.addWidget(self.time_calculator)
+        self.calculators.setCurrentWidget(self.time_calculator)
+        self.adjustSize()
 
     #Display Volume Calculator
     
