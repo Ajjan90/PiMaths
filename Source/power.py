@@ -419,6 +419,5 @@ class PowerCalculator(QtWidgets.QWidget):
             self.unitLbl.setText(
                 f"1 {unit1} = {converted} {unit2}"
             )
-
         except Exception:
             self.unitLbl.clear()
