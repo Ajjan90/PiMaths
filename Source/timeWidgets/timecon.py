@@ -2,7 +2,6 @@ from PySide6 import QtWidgets, QtCore, QtGui
 import qtawesome as qta
 from pint import UnitRegistry
 
-
 Time_measurements = [
     "Nanosecond",
     "Microsecond",

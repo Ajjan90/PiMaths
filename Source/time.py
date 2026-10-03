@@ -3,6 +3,8 @@ import qtawesome as qta
 from pint import UnitRegistry
 
 from Source.timeWidgets.timecon import TimeConversion
+from Source.timeWidgets.timeMath import TimeAS
+from Source.timeWidgets.timeDiff import DiffernceTime
 
 class TimeCalculator(QtWidgets.QWidget):
     def __init__(self):
@@ -16,11 +18,6 @@ class TimeCalculator(QtWidgets.QWidget):
         mainLayout = QtWidgets.QVBoxLayout(self)
         mainLayout.setContentsMargins(10, 10, 10, 10)
 
-        # Fonts
-        inputFont = QtGui.QFont("Arial", 18)
-        comboFont = QtGui.QFont("Arial", 13)
-        buttonFont = QtGui.QFont("Arial", 15)
-
         # Title
         title = QtWidgets.QLabel("Time Calculation")
         titleFont = QtGui.QFont("Arial", 14)
@@ -28,9 +25,13 @@ class TimeCalculator(QtWidgets.QWidget):
         title.setFont(titleFont)
 
         TimeConvert = TimeConversion()
+        TimeasCal = TimeAS(self)
+        TimeDiff = DiffernceTime()
 
         tabControl = QtWidgets.QTabWidget()
         tabControl.addTab(TimeConvert, qta.icon("mdi.alarm-multiple"), "Time Conversion")
+        tabControl.addTab(TimeasCal, qta.icon("mdi6.clock-plus-outline"), "Time Add/Subtract")
+        tabControl.addTab(TimeDiff, qta.icon("mdi6.clock-start"), "Time Difference")
         tabControl.setStyleSheet("""
                                     QTabBar::tab {
                                         min-height: 42px;
