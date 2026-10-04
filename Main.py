@@ -19,6 +19,10 @@ from Source.power import PowerCalculator
 from Source.speed import SpeedCalculator
 from Source.temp import TempCalculator
 from Source.time import TimeCalculator
+from Source.volume import VolumeCalculator
+
+#Other pages
+from Source.Settings import SettingPage
 
 appName = "Calculator"
 
@@ -98,12 +102,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.TimeView.setShortcut("Alt+Shift+5")
 
         self.VolView = QtGui.QAction("Volume", self) #Volume
+        self.VolView.setIcon(qta.icon("fa5s.cube"))
         self.VolView.setShortcut("Alt+Shift+6")
 
         #Help Menu dropdown and its submenus
         self.HelpMenu = QtWidgets.QMenu("Help", self)
         self.PerMenu = QtGui.QAction("Preferences", self) #Preferences/Settings
+        self.PerMenu.setIcon(qta.icon("ph.gear-six-fill"))
+
         self.AboutMenu = QtGui.QAction("About", self) #About
+        self.AboutMenu.setIcon(qta.icon("mdi.information"))
 
         #Edit menu and its menuitems
         #self.menu_Bar.addMenu(self.EditMenu)
@@ -148,6 +156,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.speedView.triggered.connect(self.show_Speed)
         self.TemView.triggered.connect(self.show_Temp)
         self.TimeView.triggered.connect(self.show_Time)
+        self.VolView.triggered.connect(self.show_Volume)
+
+        self.PerMenu.triggered.connect(self.show_Settings)
 
         # Start with Standard
         self.show_standard()
@@ -282,7 +293,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.adjustSize()
 
     #Display Volume Calculator
-    
+    def show_Volume(self):
+        self.ClearCurrentFrame()
+        self.vol_calculator = VolumeCalculator()
+        self.calculators.addWidget(self.vol_calculator)
+        self.calculators.setCurrentWidget(self.vol_calculator)
+        self.adjustSize()
+
+    # Display Settings Page
+    def show_Settings(self):
+        self.ClearCurrentFrame()
+        self.sett = SettingPage()
+        self.calculators.addWidget(self.sett)
+        self.calculators.setCurrentWidget(self.sett)
+        self.adjustSize()
 
 
 if __name__ == "__main__":
