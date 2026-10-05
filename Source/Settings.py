@@ -1,6 +1,8 @@
 from PySide6 import QtWidgets, QtCore, QtGui
 import qtawesome as qta
+from Source.config import Settings
 
+settings = Settings()
 
 class SettingPage(QtWidgets.QWidget):
     def __init__(self):
@@ -15,30 +17,29 @@ class SettingPage(QtWidgets.QWidget):
         font.setBold(True)
         Lbl.setFont(font)
 
-        Mainlayout.addWidget(Lbl)
-
         #Rounding Contents Card
         roundingInput = QtWidgets.QSpinBox()
         roundingInput.setRange(0, 9)
-        roundingInput.setValue(2)
+        roundingInput.setValue(settings.RoundingValue)
 
         roundingContent = self.Additional_Widget("Provide rounding options", roundingInput)
         roundingCard = self.Create_Card("Rounding numbers", roundingContent)
 
         #Digit grouping seperator
         digCheck = QtWidgets.QCheckBox("Enable")
-        digCheck.setChecked(True)
+        digCheck.setChecked(settings.DigitGroup)
 
         digGroCard = self.Create_Card("Digit-Grouping Separator", digCheck)
 
         #Appearance
         appCombo = QtWidgets.QComboBox()
         appCombo.addItems(["Light", "Dark", "Auto"])
-        appCombo.setCurrentText("Auto")
+        appCombo.setCurrentText(settings.AppTheme)
 
         AppLayout = self.Additional_Widget("Change the app theme", appCombo)
         AppCard = self.Create_Card("Appearance", AppLayout)
 
+        Mainlayout.addWidget(Lbl)
         Mainlayout.addWidget(roundingCard)
         Mainlayout.addWidget(digGroCard)
         Mainlayout.addWidget(AppCard)
@@ -79,7 +80,6 @@ class SettingPage(QtWidgets.QWidget):
 
         text = QtWidgets.QLabel(txt)
         font = QtGui.QFont("Arial", 10)
-        font.setBold(True)
         text.setFont(font)
         text.setStyleSheet("color: gray;")
 

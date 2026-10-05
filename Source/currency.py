@@ -5,8 +5,11 @@ import requests
 from countryinfo import all_countries
 import socket
 import random
+from Source.config import Settings
+
 
 countries = all_countries()
+roundingValue = Settings()
 
 class CurrencyCalculator(QtWidgets.QWidget):
     def __init__(self):
@@ -227,7 +230,7 @@ class CurrencyCalculator(QtWidgets.QWidget):
                 return
 
         if self.fromCurrency == self.toCurrency:
-            self.inputbox2.setText(self.format_number(amount))
+            self.inputbox2.setText(self.format_number(round(amount, roundingValue.RoundingValue)))
             return
 
         url = f"https://api.frankfurter.dev/v2/rate/{self.fromCurrency}/{self.toCurrency}"
@@ -237,7 +240,7 @@ class CurrencyCalculator(QtWidgets.QWidget):
             response.raise_for_status()
             data = response.json()
             convertedAmount = amount * data["rate"]
-            self.inputbox2.setText(self.format_number(convertedAmount))
+            self.inputbox2.setText(self.format_number(round(convertedAmount, roundingValue.RoundingValue)))
         except requests.RequestException as error:
             print("API error:", error)
         except (KeyError, TypeError, ValueError) as error:

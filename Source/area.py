@@ -1,6 +1,7 @@
 from PySide6 import QtWidgets, QtCore, QtGui
 import qtawesome as qta
 from pint import UnitRegistry
+from Source.config import Settings
 
 # Area units
 area_measurements = [
@@ -16,6 +17,7 @@ area_measurements = [
     "Hectares",
 ]
 
+roundingValue = Settings()
 
 class AreaCalculator(QtWidgets.QWidget):
     def __init__(self):
@@ -164,7 +166,7 @@ class AreaCalculator(QtWidgets.QWidget):
         mainLayout.addWidget(self.unitLbl)
         mainLayout.addWidget(self.buttonGridWidget)
 
-        #self.convertFirst()
+        self.convert(self.inputbox1, self.inputbox2)
         self.updateUnitLabel()
 
     # Convert a unit name into a Pint unit.
@@ -358,8 +360,7 @@ class AreaCalculator(QtWidgets.QWidget):
         if value != 0 and (abs(value) >= 1e12 or abs(value) < 1e-9):
             return f"{value:.10g}"
 
-        text = f"{value:.10f}".rstrip("0").rstrip(".")
-
+        text = f"{round(value, roundingValue.RoundingValue)}".rstrip("0").rstrip(".")
         return "0" if text == "-0" else text
 
     # Handle keypad number input.

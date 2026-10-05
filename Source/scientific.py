@@ -4,6 +4,9 @@ from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtGui import QAction
 import qtawesome as qta
 import math
+from Source.config import Settings
+
+roundingValue = Settings()
 
 CalHisList = [] #to store the calculation into this List
 CalMemList = [] #to store the resulted number into a memory
@@ -138,7 +141,7 @@ class ScientificCalculator(QtWidgets.QWidget):
             for col, text in enumerate(buttonRow):
                 button = QtWidgets.QPushButton()
                 button.setFont(buttonFont)
-                button.setFixedHeight(50)
+                button.setFixedHeight(40)
 
                 if text == "backspace":
                     button.setIcon(qta.icon("fa5s.backspace"))
@@ -1088,7 +1091,7 @@ class ScientificCalculator(QtWidgets.QWidget):
             if number.is_integer():
                 return str(int(number))
 
-            return str(number)
+            return str(round(number, roundingValue.RoundingValue))
         except (ValueError, TypeError, OverflowError):
             return "Error"
 

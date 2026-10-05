@@ -1,6 +1,9 @@
 from PySide6 import QtWidgets, QtCore, QtGui
 import qtawesome as qta
 import math
+from Source.config import Settings
+
+roundingValue = Settings()
 
 #to store the calculation into this List
 CalHisList = []
@@ -427,7 +430,7 @@ class StandardCalculator(QtWidgets.QWidget):
 
     #Format the calculation to make it easier to display on the history panel
     def format_number(self, number):
-        return str(int(number)) if number == int(number) else str(number)
+        return str(int(number)) if number == int(number) else str(round(number, roundingValue.RoundingValue))
 
     #To toggle the history panel when the button is clicked
     def toggle_history_panel(self):
