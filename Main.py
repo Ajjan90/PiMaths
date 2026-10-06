@@ -24,7 +24,7 @@ from Source.volume import VolumeCalculator
 #Other pages
 from Source.Settings import SettingPage
 
-appName = "Calculator"
+appName = "PureCalculator"
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):

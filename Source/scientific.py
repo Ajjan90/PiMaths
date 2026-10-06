@@ -600,7 +600,6 @@ class ScientificCalculator(QtWidgets.QWidget):
                 self.CalTxt.setText(self.expression)
                 return
 
-        # NORMAL CALCULATOR MODE
         try:
             current_number = float(current_text)
         except ValueError:
@@ -615,8 +614,23 @@ class ScientificCalculator(QtWidgets.QWidget):
 
         # Percentage
         if operation == "%":
-            result = current_number / 100
-            self.CalTxt.setText(self.format_number(result))
+            if self.Num1 is None or self.Operator is None:
+                result = current_number / 100
+                resultText = self.format_number(result)
+
+                self.CalTxt.setText(resultText)
+                self.PercentValue = result
+
+                return
+
+            # Calculate percentage based on Num1
+            self.PercentValue = self.Num1 * (current_number / 100)
+
+            resultText = self.format_number(self.PercentValue)
+
+            self.CalTxt.setText(resultText)
+            self.waiting_for_num2 = False
+
             return
 
         # RECIPROCAL
