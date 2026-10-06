@@ -5,3 +5,4 @@ countryinfo
 requests
 python-dateutil
 pytemperature
+pydantic_settings

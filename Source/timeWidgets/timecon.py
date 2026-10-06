@@ -19,12 +19,10 @@ Time_measurements = [
 
 
 u = UnitRegistry()
-
 u.define("fixed_month = 30 * day")
 u.define("fixed_year = 365 * day")
 u.define("fixed_decade = 10 * fixed_year")
 u.define("fixed_century = 100 * fixed_year")
-
 
 class TimeConversion(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -59,6 +57,7 @@ class TimeConversion(QtWidgets.QWidget):
         self.combo1.setFont(comboFont)
         self.combo1.setMinimumHeight(40)
         self.combo1.addItems(Time_measurements)
+        self.combo1.setCurrentText("Month")
         self.combo1.currentTextChanged.connect(self.unit1Changed)
 
         self.swapButton = QtWidgets.QPushButton()
@@ -83,6 +82,7 @@ class TimeConversion(QtWidgets.QWidget):
         self.combo2.setFont(comboFont)
         self.combo2.setMinimumHeight(40)
         self.combo2.addItems(Time_measurements)
+        self.combo2.setCurrentText("Day")
         self.combo2.currentTextChanged.connect(self.unit2Changed)
 
         self.unitLbl = QtWidgets.QLabel()

@@ -38,7 +38,6 @@ energy_measurements = [
     "Rydbergs",
 ]
 
-
 class EnergyCalculator(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -96,7 +95,7 @@ class EnergyCalculator(QtWidgets.QWidget):
         self.combo1.setFont(comboFont)
         self.combo1.setMinimumHeight(40)
         self.combo1.addItems(energy_measurements)
-        #self.combo1.setCurrentText("Square Meters")
+        self.combo1.setCurrentText("Kilojoules")
         self.combo1.currentTextChanged.connect(self.unit1Changed)
 
         # Swap button
@@ -123,7 +122,7 @@ class EnergyCalculator(QtWidgets.QWidget):
         self.combo2.setFont(comboFont)
         self.combo2.setMinimumHeight(40)
         self.combo2.addItems(energy_measurements)
-        #self.combo2.setCurrentText("Square Feet")
+        self.combo2.setCurrentText("Joules")
         self.combo2.currentTextChanged.connect(self.unit2Changed)
 
         # Unit comparison label
@@ -187,7 +186,7 @@ class EnergyCalculator(QtWidgets.QWidget):
         mainLayout.addWidget(self.unitLbl)
         mainLayout.addWidget(self.buttonGridWidget)
 
-        #self.convertFirst()
+        self.convert(self.inputbox1, self.inputbox2)
         self.updateUnitLabel()
 
     # Convert a unit name into a Pint unit.

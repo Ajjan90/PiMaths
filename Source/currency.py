@@ -230,7 +230,7 @@ class CurrencyCalculator(QtWidgets.QWidget):
                 return
 
         if self.fromCurrency == self.toCurrency:
-            self.inputbox2.setText(self.format_number(round(amount, roundingValue.RoundingValue)))
+            self.inputbox2.setText(self.format_number(amount))
             return
 
         url = f"https://api.frankfurter.dev/v2/rate/{self.fromCurrency}/{self.toCurrency}"
@@ -240,7 +240,7 @@ class CurrencyCalculator(QtWidgets.QWidget):
             response.raise_for_status()
             data = response.json()
             convertedAmount = amount * data["rate"]
-            self.inputbox2.setText(self.format_number(round(convertedAmount, roundingValue.RoundingValue)))
+            self.inputbox2.setText(self.format_number(convertedAmount))
         except requests.RequestException as error:
             print("API error:", error)
         except (KeyError, TypeError, ValueError) as error:
@@ -333,7 +333,7 @@ class CurrencyCalculator(QtWidgets.QWidget):
         if value != 0 and (abs(value) >= 1e12 or abs(value) < 1e-9):
             return f"{value:.10g}"
 
-        text = f"{value:.10f}".rstrip("0").rstrip(".")
+        text = f"{round(value, roundingValue.RoundingValue)}".rstrip("0").rstrip(".")
 
         if text == "-0":
             text = "0"
@@ -485,5 +485,4 @@ class CurrencyCalculator(QtWidgets.QWidget):
     def closeEvent(self, event):
         if hasattr(self, "networkTimer"):
             self.networkTimer.stop()
-
         event.accept()
