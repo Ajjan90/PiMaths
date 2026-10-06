@@ -1,12 +1,12 @@
 <p align="center" > <img src="https://github.com/Ajjan90/PiMaths/blob/main/PiMaths1.ico" width="250" height="250" /> </p>
 
-<h1 align="center" >PiMaths</h1>
+<h1 align="center" >PureCalculator</h1>
 
-<p align="center" > <strong>PiMaths</strong> is a simple yet a powerful calculator app for Linux users, who can perform many arithmetic calculations on the go. You can calculate using the basic calculator with the mathematic operations as well as use the scientific calculator for more advanced calculations.  </p>
+<p align="center" > <strong>PureCalculator</strong> is a simple yet a powerful calculator app for Linux users, who can perform many arithmetic calculations on the go. You can calculate using the basic calculator with the mathematic operations as well as use the scientific calculator for more advanced calculations.  </p>
 
 <h3 align="center" > But wait 🤚, there is more….. </h3>
 
-<p align="center" > PiMaths also has <strong>unit conversions</strong> tools like <strong>currency conversion rates</strong>, <strong>mass</strong>, <strong>length</strong>, <strong>area</strong>, <strong>speed</strong>, <strong>power</strong> and many more conversion calculators that you can use without needing to use online conversion rate tools.  </p>
+<p align="center" > PureCalculator also has <strong>unit conversions</strong> tools like <strong>currency conversion rates</strong>, <strong>mass</strong>, <strong>length</strong>, <strong>area</strong>, <strong>speed</strong>, <strong>power</strong> and many more conversion calculators that you can use without needing to use online conversion rate tools.  </p>
 
 <h3>Raspberry Pi OS</h3>
 <img src="https://github.com/Ajjan90/PiMaths/blob/main/img/PiBanner.png" />
@@ -48,5 +48,5 @@
 | Memory | In the Scientific calculator, you can store the current calculated value in **Memory**, which can later be recalled, added to, subtracted from, or cleared completely. You can access the Memory list by clicking the **View List** button on the top right and navigating to the **Memory** tab. |
 
 <h1>Documentation</h1>
-<p> If you want to initialize PiMaths or want to modify it for your own purpose, use the documentation provided to clone and run PiMaths on your system </p>
+<p> If you want to initialize PureCalculator or want to modify it for your own purpose, use the documentation provided to clone and run PureCalculator on your system </p>
 
