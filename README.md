@@ -2,7 +2,7 @@
 
 <h1 align="center" >PureCalculator</h1>
 
-<p align="center" > <strong>PureCalculator</strong> is a simple yet a powerful calculator app for Linux users, who can perform many arithmetic calculations on the go. You can calculate using the basic calculator with the mathematic operations as well as use the scientific calculator for more advanced calculations.  </p>
+<p align="center" > <strong>PureCalculator</strong> is a simple yet a powerful calculator app, written in pure python, who can perform many arithmetic calculations on the go. You can calculate using the basic calculator with the mathematic operations as well as use the scientific calculator for more advanced calculations.  </p>
 
 <h3 align="center" > But wait 🤚, there is more….. </h3>
 
