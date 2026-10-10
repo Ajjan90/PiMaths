@@ -1,8 +1,10 @@
 from PySide6 import QtWidgets, QtCore, QtGui
 import qtawesome as qta
 import statistics as Stat
+from Source.config import Settings
 
 NumList = [] #to store the calculation into this List
+roundingValue = Settings()
 
 class AverageCalculator(QtWidgets.QWidget):
     def __init__(self):
@@ -389,7 +391,17 @@ class AverageCalculator(QtWidgets.QWidget):
 
     #Format the number to make it easier to display
     def format_number(self, number):
-        return str(int(number)) if number == int(number) else str(number)
+        if number == int(number):
+            return str(int(number))
+
+        precision = roundingValue.RoundingValue
+        rounded = round(number, precision)
+
+        if rounded == 0 and number != 0:
+            return str(number)
+
+        return f"{rounded:.{precision}f}".rstrip("0").rstrip(".")
+
 
     #Store the current number in NumList
     def store_number(self, value):

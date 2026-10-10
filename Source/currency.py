@@ -329,16 +329,18 @@ class CurrencyCalculator(QtWidgets.QWidget):
         return super().eventFilter(obj, event)
 
     # Format numbers without unnecessary zeros
-    def format_number(self, value):
-        if value != 0 and (abs(value) >= 1e12 or abs(value) < 1e-9):
-            return f"{value:.10g}"
+    def format_number(self, number):
+        if number == int(number):
+            return str(int(number))
 
-        text = f"{round(value, roundingValue.RoundingValue)}".rstrip("0").rstrip(".")
+        precision = roundingValue.RoundingValue
+        rounded = round(number, precision)
 
-        if text == "-0":
-            text = "0"
+        if rounded == 0 and number != 0:
+            return str(number)
 
-        return text
+        return f"{rounded:.{precision}f}".rstrip("0").rstrip(".")
+
 
     def number_clicked(self, value):
         line_edit = self.currentInput

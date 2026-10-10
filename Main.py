@@ -1,5 +1,4 @@
 from PySide6 import QtWidgets, QtCore, QtGui
-#from PySide6.QtWidgets import QLabel
 import qtawesome as qta
 
 from Source.standard import StandardCalculator
@@ -311,7 +310,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
-    window = MainWindow()
     app.setApplicationName(appName)
+    window = MainWindow()
     window.show()
     app.exec()

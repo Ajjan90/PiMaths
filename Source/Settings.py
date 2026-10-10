@@ -1,8 +1,10 @@
 from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6.QtCore import QSettings
 import qtawesome as qta
 from Source.config import Settings
 
 settings = Settings()
+
 
 class SettingPage(QtWidgets.QWidget):
     def __init__(self):
@@ -17,34 +19,55 @@ class SettingPage(QtWidgets.QWidget):
         font.setBold(True)
         Lbl.setFont(font)
 
-        #Rounding Contents Card
+        # Rounding Contents Card
         roundingInput = QtWidgets.QSpinBox()
         roundingInput.setRange(0, 9)
         roundingInput.setValue(settings.RoundingValue)
+        roundingInput.valueChanged.connect(self.ApplyRoundChange)
 
-        roundingContent = self.Additional_Widget("Provide rounding options", roundingInput)
-        roundingCard = self.Create_Card("Rounding numbers", roundingContent)
+        roundingContent = self.Additional_Widget(
+            "Provide rounding options",
+            roundingInput
+        )
 
-        #Digit grouping seperator
+        roundingCard = self.Create_Card(
+            "Rounding numbers",
+            roundingContent
+        )
+
+        # Digit grouping separator
         digCheck = QtWidgets.QCheckBox("Enable")
         digCheck.setChecked(settings.DigitGroup)
 
-        digGroCard = self.Create_Card("Digit-Grouping Separator", digCheck)
+        digGroCard = self.Create_Card(
+            "Digit-Grouping Separator",
+            digCheck
+        )
 
-        #Appearance
+        # Appearance
         appCombo = QtWidgets.QComboBox()
         appCombo.addItems(["Light", "Dark", "Auto"])
         appCombo.setCurrentText(settings.AppTheme)
 
-        AppLayout = self.Additional_Widget("Change the app theme", appCombo)
-        AppCard = self.Create_Card("Appearance", AppLayout)
+        AppLayout = self.Additional_Widget(
+            "Change the app theme",
+            appCombo
+        )
+
+        AppCard = self.Create_Card(
+            "Appearance",
+            AppLayout
+        )
 
         Mainlayout.addWidget(Lbl)
         Mainlayout.addWidget(roundingCard)
         Mainlayout.addWidget(digGroCard)
-        Mainlayout.addWidget(AppCard)
+        # Mainlayout.addWidget(AppCard)
         Mainlayout.addStretch()
 
+    def ApplyRoundChange(self, value):
+        settings.RoundingValue = value
+        
 
     def Create_Card(self, title, *items):
         base = QtWidgets.QFrame()
@@ -53,7 +76,8 @@ class SettingPage(QtWidgets.QWidget):
             QFrame#card {
                 border: 1px solid gray;
                 border-radius: 12px;
-            }""")
+            }
+        """)
 
         layout = QtWidgets.QVBoxLayout(base)
         layout.setContentsMargins(20, 20, 20, 20)

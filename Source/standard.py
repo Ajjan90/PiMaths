@@ -291,7 +291,7 @@ class StandardCalculator(QtWidgets.QWidget):
             return
 
         try:
-            current_number = float(current_text)
+            current_number = float(current_text.replace(",", ""))
         except ValueError:
             self.CalTxt.setText("Error")
             return
@@ -442,10 +442,31 @@ class StandardCalculator(QtWidgets.QWidget):
         if operator == "÷":
             return None if num2 == 0 else num1 / num2
         return None
-
+    
     #Format the calculation to make it easier to display on the history panel
     def format_number(self, number):
-        return str(int(number)) if number == int(number) else str(round(number, roundingValue.RoundingValue))
+        precision = roundingValue.RoundingValue
+
+        if number == int(number):
+            result = str(int(number))
+        else:
+            rounded = round(number, precision)
+
+            # Preserve small non-zero values
+            if rounded == 0 and number != 0:
+                result = str(number)
+            else:
+                result = f"{rounded:.{precision}f}".rstrip("0").rstrip(".")
+
+        # Apply digit grouping if enabled in Settings
+        if roundingValue.DigitGroup:
+            if "." in result:
+                integer, decimal = result.split(".", 1)
+                result = f"{int(integer):,}.{decimal}"
+            else:
+                result = f"{int(result):,}"
+
+        return result
 
     #To toggle the history panel when the button is clicked
     def toggle_history_panel(self):

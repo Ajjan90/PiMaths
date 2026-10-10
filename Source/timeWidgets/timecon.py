@@ -1,6 +1,7 @@
 from PySide6 import QtWidgets, QtCore, QtGui
 import qtawesome as qta
 from pint import UnitRegistry
+from Source.config import Settings
 
 Time_measurements = [
     "Nanosecond",
@@ -17,6 +18,7 @@ Time_measurements = [
     "Century",
 ]
 
+roundingValue = Settings()
 
 u = UnitRegistry()
 u.define("fixed_month = 30 * day")
@@ -283,19 +285,18 @@ class TimeConversion(QtWidgets.QWidget):
         self.convertFromCurrentInput()
         self.updateUnitLabel()
 
-    def format_number(self, value):
-        if value == 0:
-            return "0"
+    def format_number(self, number):
+        if number == int(number):
+            return str(int(number))
 
-        if abs(value) >= 1e12 or abs(value) < 1e-9:
-            return f"{value:.10g}"
+        precision = roundingValue.RoundingValue
+        rounded = round(number, precision)
 
-        text = f"{value:.10f}".rstrip("0").rstrip(".")
+        if rounded == 0 and number != 0:
+            return str(number)
 
-        if text in ("-0", ""):
-            return "0"
+        return f"{rounded:.{precision}f}".rstrip("0").rstrip(".")
 
-        return text
 
     def number_clicked(self, value):
         lineEdit = self.currentInput or self.inputbox1

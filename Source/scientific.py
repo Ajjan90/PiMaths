@@ -761,7 +761,7 @@ class ScientificCalculator(QtWidgets.QWidget):
                 self.show_error()
             return
 
-       # Modulo / Remainder
+        # Modulo / Remainder
         if operation == "Mod":
             if self.Num1 is None:
                 self.show_error()
@@ -1096,18 +1096,16 @@ class ScientificCalculator(QtWidgets.QWidget):
 
     #Format the calculation to make it easier to display on the history panel
     def format_number(self, number):
-        try:
-            number = float(number)
-
-            if not math.isfinite(number):
-                return "Error"
-
-            if number.is_integer():
-                return str(int(number))
-
-            return str(round(number, roundingValue.RoundingValue))
-        except (ValueError, TypeError, OverflowError):
-            return "Error"
+        if number == int(number):
+            return str(int(number))
+    
+        precision = roundingValue.RoundingValue
+        rounded = round(number, precision)
+    
+        if rounded == 0 and number != 0:
+            return str(number)
+    
+        return f"{rounded:.{precision}f}".rstrip("0").rstrip(".")
 
     #To toggle the history panel when the button is clicked
     def toggle_history_panel(self):
